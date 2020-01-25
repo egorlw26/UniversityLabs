@@ -1,0 +1,59 @@
+<html>
+	<head>
+	<title>{% block title %}{% endblock %}</title>
+		<script src = "{{ url_for('static', filename='jQuery.min.js') }}"></script>
+		<script src = "{{ url_for('static', filename='scripts.js') }}"></script>
+	</head>
+	
+	<style>
+		.content {
+			margin: auto;
+			width: 20%;
+		}
+		table {
+			width: 100%;
+			align: center;
+			border: 1px solid black;
+			border-collapse: collapse;
+			background-color: #eeeeff;
+		}
+		td {
+			text-align: center;
+			height: 20px;
+		}
+		
+		.action:hover {
+			cursor: pointer;
+			background-color: blue;
+		}
+		
+		body{
+			background-color: #3f4853
+		}
+		
+	</style>
+	
+	<body>
+		<div class="content">
+			<center>Local Databases:</center>
+			<table border = "1">
+				{% for db in databases %}
+				<tr>
+					<td><div class="action"><a href={{ url_for('open_db', db_name = db.db['name']) }}> {{db.db["name"]}} </a></div></td>
+				</tr>
+				{% endfor %}
+			</table>
+			<br>
+			<center>Mongo Databases:</center>
+			<table border = "1">
+				{% for db in databases %}
+				<tr>
+					<td><div class="action"><a href={{ url_for('open_db', db_name = db.db['name']) }}> {{db.db["name"]}} </a></div></td>
+				</tr>
+				{% endfor %}
+			</table>
+			
+		</div>
+	</body>
+	
+</html>

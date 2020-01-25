@@ -1,0 +1,173 @@
+<html>
+	<head>
+		<title>{% block title %}{% endblock %}</title>
+		<script src = "{{ url_for('static', filename='jQuery.min.js') }}"></script>
+		<script src = "{{ url_for('static', filename='scripts.js') }}"></script>
+	</head>
+	
+	<style>
+	.content {
+		margin: auto;
+		width: 80%;
+	}
+	table {
+		width: 100%;
+		align: center;
+		border: 1px solid black;
+		border-collapse: collapse;
+		background-color: #eeeeff;
+	}
+	td {
+		text-align: center;
+		height: 20px;
+	}
+	tr:first-child {
+		background-color: #aaaaee;
+	}
+	td:last-child, th:last-child {
+		width: 20px;
+	}
+	body{
+	background-color: #3f4853
+	}
+	
+	.del-row-btn:hover {
+		cursor: pointer;
+		background-color: red;
+	}
+	
+	.del_table_btn:hover {
+		cursor: pointer;
+		background-color: red;
+	}
+	
+	.add_row_btn:hover {
+		cursor: pointer;
+		background-color: green;
+	}
+	
+	.add_table_btn{
+		margin: auto;
+		width: 60%;
+		text-align: center;
+	}
+	
+	.add_column_btn{
+		margin: auto;
+		min-width: max;
+		min-height: max;
+	}
+	
+	.add_column_btn:hover {
+		cursor: pointer;
+		background-color: green;
+	}
+	
+	.del_column_btn:hover {
+		cursor: pointer;
+		background-color: red;
+	}
+	
+	.union_table_btn{
+		margin: auto;
+		width: 60%;
+		text-align: center;
+	}
+	
+	input {
+		width: 100%;
+	}
+	
+	.b-popup {
+		width:100%;
+		min-height:100%;
+		background-color: rgba(0,0,0,0.5);
+		overflow:hidden;
+		position:fixed;
+		top:0px;
+	}
+	.b-popup .b-popup-content {
+		margin:40px auto 0px auto;
+		width:130px;
+		height: 50%;
+		padding:10px;
+		background-color: #c5c5c5;
+		border-radius:5px;
+		box-shadow: 0px 0px 10px #000;
+	}
+	
+	</style>
+	
+	<body>
+		<center><a href={{url_for('index')}}><font color="black"><b>HOME</b></font></a></center>
+		<br>
+		{% for table in database.db["tables"] %}
+		<div class="content">
+			<table border = "1" align = "center" id="{{table['name']}}">
+				<caption><b> {{table["name"]}}<div class = "del_table_btn" onclick = "delete_table('{{database.db['name']}}', '{{table["name"]}}')"><b> delete </b></div> </b></caption>
+				<tr>
+				{% for column in table["columns"] %}
+					<th> 
+						{{column["name"]}}
+						<div class="del_column_btn" onclick="remove_column('{{database.db['name']}}', '{{table["name"]}}', '{{column["name"]}}')"> X </div>
+					</th>
+				{% endfor %}
+					<th><div class="add_column_btn" onclick="pop_up_c_show('{{table["name"]}}')"><b> + </b></th>
+				</tr>
+				{% for row in table["rows"] %}
+				<tr>
+					{% for cell in row %}
+					<td> {{cell["data"]}} </td>
+					{% endfor %}
+					<td> <div class = "del-row-btn" onclick = "delete_row('{{database.db['name']}}', '{{table["name"]}}', {{loop.index}}-1)"><b> x </b></div> </td>
+				</tr>
+				{% endfor %}
+				<tr>
+				{% for column in table["columns"] %}
+					<td> <input type="text" name = "{{column['name']}}"> </td>
+				{% endfor %}
+					<td><div class = "add_row_btn" onclick = "add_row('{{database.db['name']}}', '{{table["name"]}}')"><b> + </b></div></td>
+				</tr>
+			</table>
+			<br>
+		</div>
+		{% endfor %}
+		<div class="add_table_btn" onclick="pop_up_t_show()"><input type="button" value="Add New Table"></div>
+		<div class="union_table_btn" onclick="pop_up_u_show()"><input type="button" value="Union Table"></div>
+		
+		<div class="b-popup" id="popup_table">
+			<div class="b-popup-content">
+				<center>Table Name</center>
+				<input type="field" onfocus="this.value=''" id="table_name_input">
+				<input type="button" value="Accept" onclick="add_table('{{database.db['name']}}')">
+				<input type="button" value="Cancel" onclick="pop_up_t_hide()">
+			</div>
+		</div>
+		
+		<div class="b-popup" id="popup_column">
+			<div class="b-popup-content">
+				<center>Column Name</center>
+				<input type="hidden" id="hidden_table_name">
+				<input type="field" onfocus="this.value=''" id="column_name_input">
+				<input type="button" value="Accept" onclick="add_column('{{database.db['name']}}')">
+				<input type="button" value="Cancel" onclick="pop_up_c_hide()">
+			</div>
+		</div>
+		
+		<div class="b-popup" id="popup_union">
+			<div class="b-popup-content">
+				<center>First Table Name</center>
+				<input type="field" onfocus="this.value=''" id="union_ft_name_input">
+				<center>Second Table Name</center>
+				<input type="field" onfocus="this.value=''" id="union_st_name_input">
+				<center>Column Name</center>
+				<input type="field" onfocus="this.value=''" id="union_c_name_input">
+				<center>New Table Name</center>
+				<input type="field" onfocus="this.value=''" id="union_nt_name_input">
+				<input type="button" value="Accept" onclick="add_union_table('{{database.db['name']}}')">
+				<input type="button" value="Cancel" onclick="pop_up_u_hide()">
+			</div>
+		</div>
+		
+	</body>
+</html>
