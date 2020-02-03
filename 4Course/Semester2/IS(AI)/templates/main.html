@@ -1,0 +1,69 @@
+<html>
+	<head>
+	<title>ChatterBot</title>
+		<script src = "{{ url_for('static', filename='jQuery.min.js') }}"></script>
+		<script src = "{{ url_for('static', filename='scripts.js') }}"></script>
+	</head>
+	
+	<style>
+		.content {
+			margin: auto;
+			width: 50%;
+			height: 90%;
+		}
+		
+		.inputField {
+			margin: auto;
+			width: 100%;
+			
+		}
+		
+		body{
+			background-color: #3f4853
+		}
+		
+		footer { 
+			margin: auto;
+      width: 100%; 
+      bottom: 0px;  
+      position: center; 
+      padding-top:20px; 
+      padding-bottom:50px;  
+    } 
+		
+		input[type="text"], textarea{
+			background-color: #2f393d;
+			border: 1px solid #346eeb;
+			color: white;
+			padding: 15px 32px;
+		}
+		
+		input[type="text"]{
+			width: 50%;
+			font-size: 16px;
+		}
+		
+		textarea{
+			margin: auto;
+			width: 100%;
+			height: 100%;
+			resize: none;
+		}
+		
+	</style>
+	
+	
+	<body onload="onEnter()">
+		<div class="content">
+			<textarea id="mainTextArea">
+			</textarea>
+		</div>
+		<footer>
+				<center>
+				<input type="text" id="mainInput" placeholder="<enter your message>" required
+					minlength="1" maxlength="200" size="max">
+				</center>
+		</footer>
+	</body>
+	
+</html>
