@@ -6,7 +6,7 @@ class Chatty:
     def __init__(self):
         self.bot = ChatBot('Chatty', 
             default_response = "I don't understand you :(")
-        self.data_path = 'custom_corpus/english.corpus.json'
+        self.data_path = 'custom_corpus/yehor.corpus.json'
         self.trainer = ChatterBotCorpusTrainer(self.bot)
         self.trainer.train(self.data_path)
         
