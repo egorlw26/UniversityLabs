@@ -10,12 +10,30 @@
 			margin: auto;
 			width: 50%;
 			height: 90%;
+			padding-top: 20px;
+			position: center;
+		}
+		
+		.extra{
+			margin: auto;
+			width: 50%;
+			text-align: left;
+			padding-bottom: 10px;
+			overflow: hidden;
+			font-family: monospace;
+			font-size: 16px;
+		}
+		
+		.extra input[type="text"] {
+			background-color: #2f393d;
+			border: 1px solid #346eeb;
+			color: white;
+			width: 20%;
 		}
 		
 		.inputField {
 			margin: auto;
 			width: 100%;
-			
 		}
 		
 		body{
@@ -28,18 +46,28 @@
       bottom: 0px;  
       position: center; 
       padding-top:20px; 
-      padding-bottom:50px;  
+      padding-bottom:20px;  
+			overflow: hidden;
     } 
+		
+		.input, .addCategory{
+			padding-bottom: 10px;
+		}
+		
+		.extra input[type="button"], .extra input[type="text"], select, text{
+			margin-right: 10px;
+		}
 		
 		input[type="text"], textarea{
 			background-color: #2f393d;
 			border: 1px solid #346eeb;
 			color: white;
-			padding: 15px 32px;
+			padding: 15px 10px;
 		}
 		
 		input[type="text"]{
 			width: 50%;
+			height: 30px;
 			font-size: 16px;
 		}
 		
@@ -55,14 +83,39 @@
 	
 	<body onload="onEnter()">
 		<div class="content">
-			<textarea id="mainTextArea">
+			<textarea id="mainTextArea" readonly>
 			</textarea>
 		</div>
+		
 		<footer>
+			<div class="input">
 				<center>
 				<input type="text" id="mainInput" placeholder="<enter your message>" required
 					minlength="1" maxlength="200" size="max">
 				</center>
+			</div>
+			
+			<div class="extra">
+			<center>
+				<div class="addCategory">
+					<input type="button" value="Add category" onclick="addCategory()"></input>
+					<text><font color="white">Category Name: </font></text>
+					<input id="categoryInput" type="text" placeholder="<enter name>"></input>
+				</div>
+				<div>
+					<input type="button" value="Add dialog to category"></input>
+					<select id="categorySelect">
+						{% for category in categories %}
+							<option>{{category}}</option>
+						{% endfor %}
+					</select>
+					<text><font color="white">Input phrase: </font></text>
+					<input type="text" placeholder="<enter>"></input>
+					<text><font color="white">Output phrase: </font></text>
+					<input type="text" placeholder="<enter>"></input>
+				</div>
+			</center>
+			</div>
 		</footer>
 	</body>
 	

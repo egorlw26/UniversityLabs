@@ -14,8 +14,16 @@ function onEnter(){
 	});
 }
 
+function fillCategorySelect(){
+	
+}
+
+function addCategory(){
+	var input = document.getElementById("categoryInput");
+	var name = input.value;
+	input.value = "";
+	$.post("/addCategory/"+name);
+}
+
 function refresh(){
-	alert("Hi!");
-	var input = document.getElementById("mainInput");
-	input.value = "asdasdas";
 }
