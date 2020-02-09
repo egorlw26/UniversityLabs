@@ -14,16 +14,28 @@ function onEnter(){
 	});
 }
 
-function fillCategorySelect(){
-	
+function trainBot(){
+	$.post("/update", refresh);
 }
 
 function addCategory(){
 	var input = document.getElementById("categoryInput");
 	var name = input.value;
 	input.value = "";
-	$.post("/addCategory/"+name);
+	$.post("/addCategory/"+name, refresh);
+}
+
+function addDialog(){
+	var category = document.getElementById("categorySelect").value;
+	var inputPhraseInput = document.getElementById("inputInput");
+	var outputPhraseInput = document.getElementById("outputInput");
+	var iPhrase = inputPhraseInput.value;
+	var oPhrase = outputPhraseInput.value;
+	inputPhraseInput.value = "";
+	outputPhraseInput.value = "";
+	$.post("/addDialog/"+category+'/'+iPhrase+'/'+oPhrase, refresh);
 }
 
 function refresh(){
+	document.location.reload(true);
 }
