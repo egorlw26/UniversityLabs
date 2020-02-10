@@ -1,15 +1,14 @@
 from flask import Flask, flash, redirect, render_template, request
 from Chatbot import *
+import os
 
 app = Flask(__name__)
+app.bot = Chatty()
 
 def getCategories():
     categories = []
-    filePath = "custom_corpus/english.corpus.json"
-    with open(filePath, "r") as json_file:
-        data = json.load(json_file)
-        for category in data:
-            categories.append(category)
+    for file in os.listdir("custom_corpus"):
+        categories.append(file[:-4])
     return categories
 
 @app.route("/", methods = ["GET"])
@@ -19,38 +18,22 @@ def index():
 @app.route("/test", methods = ["POST"])
 def test():
     msg = request.form.get("msg")
-    print(msg)
     return {"response": str(app.bot.request(msg))}
 
 @app.route("/addCategory/<categoryName>", methods = ["POST"])
 def addCategory(categoryName):
-    data = {}
-    filePath = "custom_corpus/english.corpus.json"
-    with open(filePath, "r") as json_file:
-        data = json.load(json_file)
-    
-    data[categoryName] = []
-    
-    with open(filePath, "w") as json_file:
-        json.dump(data, json_file, indent=2)
-    
+    app.bot.add_dialogue(["Hi", "Hi"], categoryName)
     return ""    
 
 @app.route("/addDialog/<category>/<input>/<output>", methods = ["POST"])
 def addDialog(category, input, output):
-    data = {}
-    filePath = "custom_corpus/english.corpus.json"
-    with open(filePath, 'r') as json_file:
-        data = json.load(json_file)
-        
-    data[category].append([input, output])
-    with open(filePath, 'w') as json_file:
-        json.dump(data, json_file, indent=2)
+    dialogue = [input, output]
+    app.bot.add_dialogue(dialogue, category)
     return ""
 
 @app.route("/update", methods = ["POST"])
 def trainBot():
-    app.bot = Chatty()
+    app.bot.train()
     return ""
 
 if __name__ == "__main__":
