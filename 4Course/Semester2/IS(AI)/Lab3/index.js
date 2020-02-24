@@ -1,8 +1,10 @@
 var canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
 
-canvas.width = 600;
-canvas.height = 600;
+canvas.width = window.innerWidth*0.95;
+canvas.height = window.innerHeight*0.95;
+canvas.style = "position: center;"
+var offsetForMaze = 1;
 
 var context = canvas.getContext('2d')
 
@@ -18,14 +20,6 @@ function draw_line(startX, startY, endX, endY){
   context.moveTo(startX, startY);
   context.lineTo(endX, endY);
   context.stroke();
-}
-
-function image_test()
-{
-  var img = new Image();
-  img.src = 'smile.jpg';
-  console.log(img);
-  document.body.appendChild(img);
 }
 
 function randomInt(a, b) {
@@ -51,11 +45,13 @@ class Cell {
   }
 
   draw(x, y) {
+    context.strokeStyle = 'black'
     for (let i = 0; i < 4; ++i) {
       const next_x = x + Dirs[(i + 1) % 4][0];
       const next_y = y + Dirs[(i + 1) % 4][1];
       if (this.walls[i]) {
-        draw_line(x * w, y * h, next_x * w, next_y * h);
+        draw_line(offsetForMaze + x * w, offsetForMaze + y * h,
+          offsetForMaze + next_x * w, offsetForMaze + next_y * h);
       }
       x = next_x;
       y = next_y;
@@ -131,32 +127,35 @@ class Maze {
 class Player{
   constructor(maze){
     this.path = [];
+    this.found = false;
+    this.visited = [];
     this.maze = maze;
-}
-
-  dfsPathfinder(targetX, targetY){
-    var visited = [];
+  }
+  dfsPathfinderStart(){
+    this.found = false;
+    this.visited = [];
     for(var i = 0; i<rows; i++){
       var row = [];
       for(var j = 0; j<columns; j++)
         row.push(false);
-      visited.push(row);
+      this.visited.push(row);
     }
 
-    var stack=[
-      [Math.floor(rows/2) - 1, Math.floor(columns/2) - 1]
+    this.path =[
+      [rows-1, columns-1]
     ];
+  }
 
-    while(stack.length > 0) {
-      const curr_pos = stack[stack.length -1];
+  dfsPathfinderMakeStep(targetX, targetY) {
+      if(this.path.length > 0 && !this.found) {
+      const curr_pos = this.path[this.path.length -1];
       const x = curr_pos[0];
       const y = curr_pos[1];
-      visited[y][x] = true;
+      this.visited[y][x] = true;
 
-      console.log(x, y, targetX, targetY);
       /// We found our target!
       if(x === targetX && y === targetY){
-        this.path = stack;
+        this.found = true;
         return;
       }
 
@@ -164,35 +163,47 @@ class Player{
       for(var i = 0; i<4; i++){
         const cell_x = x + Dirs[i][0];
         const cell_y = y + Dirs[i][1];
-        if(this.maze.isInGrid(cell_x, cell_y) && !visited[cell_y][cell_x] && !this.maze.maze[y][x].walls[i])
+        if(this.maze.isInGrid(cell_x, cell_y) && !this.visited[cell_y][cell_x] && !this.maze.maze[y][x].walls[i])
           available_dirs.push(i);
       }
 
       if (available_dirs.length == 0) {
-        stack.pop();
-        continue;
+        this.path.pop();
+        return;
       }
 
       const dir_id = available_dirs[0];
       const next_x = x + Dirs[dir_id][0];
       const next_y = y + Dirs[dir_id][1];
-      stack.push([next_x, next_y]);
+      this.path.push([next_x, next_y]);
     }
   }
 }
 
+function drawPlayerPath(path){
+  context.strokeStyle = 'red';
+  for(var i = 1; i<path.length; i++)
+  draw_line(path[i-1][0]*w + w/2, path[i-1][1]*h + h/2, 
+    path[i][0]*w + w/2, path[i][1]*h + h/2);
+}
+
+function drawEverything(maze, player){
+  maze.draw();
+  drawPlayerPath(player.path);
+}
+
 var maze = new Maze(rows, columns);
 maze.dfsGenerator();
-maze.draw()
 
 var player = new Player(maze);
-player.dfsPathfinder(0, 0);
-
-path = player.path;
-console.log(path);
-context.strokeStyle = 'red';
-for(var i = 1; i<path.length; i++)
-  draw_line(path[i-1][0]*w + w/2, path[i-1][1]*h + h/2, path[i][0]*w + w/2, path[i][1]*h + h/2);
+player.dfsPathfinderStart();
 
 
-//image_test();
+function update(){
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  player.dfsPathfinderMakeStep(0, 0);
+  drawEverything(maze, player);
+  setTimeout(update, 40);
+}
+
+update();
