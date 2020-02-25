@@ -1,19 +1,16 @@
-var canvas = document.createElement('canvas');
-canvas.id = 'myCanvas';
-document.body.appendChild(canvas);
+var canvas = document.getElementById('canvas');
 
-canvas.width = window.innerWidth*0.95;
-canvas.height = window.innerHeight*0.95;
-canvas.style = "position: center;"
-var offsetForMaze = 1;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+var offsetForMaze = 0;
 
 var context = canvas.getContext('2d')
 
 /// set parameters
 var rows = 15;
 var columns = 15;
-var w = canvas.width / rows-1;
-var h = canvas.height / columns-1;
+var w = canvas.width / rows;
+var h = canvas.height / columns;
 
 //simple way to draw line
 function draw_line(startX, startY, endX, endY){
@@ -46,7 +43,7 @@ class Cell {
   }
 
   draw(x, y) {
-    context.strokeStyle = 'black'
+    context.strokeStyle = '#2734cf'
     for (let i = 0; i < 4; ++i) {
       const next_x = x + Dirs[(i + 1) % 4][0];
       const next_y = y + Dirs[(i + 1) % 4][1];
@@ -118,7 +115,7 @@ class Maze {
   }
 
   draw() {
-    context.rect(0, 0, this.width * 20, this.height * 20);
+    //context.rect(0, 0, this.width * w, this.height * h);
     for (let y = 0; y < this.height; ++y)
       for (let x = 0; x < this.width; ++x)
         this.maze[y][x].draw(x, y);
@@ -193,18 +190,35 @@ function drawEverything(maze, player){
   drawPlayerPath(player.path);
 }
 
-var maze = new Maze(rows, columns);
-maze.dfsGenerator();
+window.onload = function(){
+  canvas.addEventListener("mousedown", onMouseClick, false);
+  maze = new Maze(rows, columns);
+  maze.dfsGenerator();
+  maze.draw();
+  player = new Player(maze);
+}
 
-var player = new Player(maze);
-player.dfsPathfinderStart();
+var maze;
+var player;
+var targetX;
+var targetY;
 
+function onMouseClick(event){
+  player.dfsPathfinderStart();
+  targetX = Math.floor(event.pageX/w);
+  targetY = Math.floor(event.pageY/h);
+  console.log(targetX, targetY);
+  update();
+}
 
 function update(){
   context.clearRect(0, 0, canvas.width, canvas.height);
-  player.dfsPathfinderMakeStep(0, 0);
+  player.dfsPathfinderMakeStep(targetX, targetY);
   drawEverything(maze, player);
+  if(player.found === true)
+  {
+    console.log("STOP");
+    return;
+  }
   setTimeout(update, 40);
 }
-
-update();
