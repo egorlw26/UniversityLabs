@@ -49,23 +49,25 @@ def predict(dataset, row):
     label = max(probabilities, key=probabilities.get)
     print("Label:", label)
     row.append(label)
-    dataset = np.append(dataset,row)
+    dataset = np.append(dataset, [row], axis = 0)
+    return dataset
 
 def outOfBoxPredict(dataset, row):
     sk_bc = GaussianNB()
     sk_bc.fit(dataset[:,0:2], dataset[:,2])
     predictions = sk_bc.predict_proba([row])[0]
-    print(np.argmax(predictions))
+    label = np.argmax(predictions)
+    print(label)
+    row.append(label)
+    dataset = np.append(dataset, [row], axis=0)
+    return dataset
 
 if __name__ == '__main__':
     dataset = createDataset()
-    predict(dataset, [1, 1])
-    predict(dataset, [10, 6])
+    dataset = predict(dataset, [1, 1])
+    dataset = predict(dataset, [10, 6])
 
-    outOfBoxPredict(dataset, [10, 6])
+    dataset = outOfBoxPredict(dataset, [10, 15])
 
     plotDataset(dataset)
-
-
-
     plt.show()
