@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from DatasetFuncs import *
 from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
 
 
 def sigmoid(scores):
