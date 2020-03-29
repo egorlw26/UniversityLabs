@@ -43,9 +43,17 @@ def outOfBoxPredict(dataset, newP):
     return dataset
 
 if __name__ == '__main__':
-    dataset = createDataset()
-    dataset = predict(dataset, [5, 7])
-    dataset = outOfBoxPredict(dataset, [10, 1])
+    datasetMyPreds = createDataset()
+    datasetOOBPreds = datasetMyPreds
 
-    plotDataset(dataset)
+    datasetMyPreds = predict(datasetMyPreds, [5, 7])
+    datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [10, 1])
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    ax1.set_title("InHouseKNN")
+    ax2.set_title("SkLearnKNN")
+
+    plotDataset(datasetMyPreds, ax1)
+    plotDataset(datasetOOBPreds, ax2)
+
     plt.show()

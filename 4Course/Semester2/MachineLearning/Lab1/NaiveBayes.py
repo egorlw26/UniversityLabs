@@ -43,9 +43,13 @@ def calculateClassPropabilities(summaries, row):
             probalities[class_value] *= calculatePropability(row[i], mean, stdev)
     return probalities
 
-def predict(dataset, row):
+def getProbabilities(dataset, row):
     summaries = summarizeByClass(dataset)
-    probabilities = calculateClassPropabilities(summaries, row)
+    probs = calculateClassPropabilities(summaries, row)
+    return probs
+
+def predict(dataset, row):
+    probabilities = getProbabilities(dataset, row)
     label = max(probabilities, key=probabilities.get)
     print("Label:", label)
     row.append(label)
@@ -63,11 +67,18 @@ def outOfBoxPredict(dataset, row):
     return dataset
 
 if __name__ == '__main__':
-    dataset = createDataset()
-    dataset = predict(dataset, [1, 1])
-    dataset = predict(dataset, [10, 6])
+    datasetMyPreds = createDataset()
+    datasetOOBPreds = datasetMyPreds
 
-    dataset = outOfBoxPredict(dataset, [10, 15])
+    datasetMyPreds = predict(datasetMyPreds, [1, 1])
+    datasetMyPreds = predict(datasetMyPreds, [10, 6])
 
-    plotDataset(dataset)
+    datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [10, 15])
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    ax1.set_title("InHouseNaiveBayes")
+    ax2.set_title("SkLearnNaiveBayes")
+
+    plotDataset(datasetMyPreds, ax1)
+    plotDataset(datasetOOBPreds, ax2)
     plt.show()

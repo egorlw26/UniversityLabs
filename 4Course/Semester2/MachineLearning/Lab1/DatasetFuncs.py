@@ -39,9 +39,9 @@ def separateByClass(dataset):
         separated[class_value].append(vector)
     return separated
 
-def plotDataset(dataset):
+def plotDataset(dataset, axs):
     separated = separateByClass(dataset)
     for i in range(len(separated)):
-        plt.scatter(
+        axs.scatter(
         [x[0] for x in separated[i]],
         [x[1] for x in separated[i]])
