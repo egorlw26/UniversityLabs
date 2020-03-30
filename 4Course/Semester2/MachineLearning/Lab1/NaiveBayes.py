@@ -68,7 +68,8 @@ if __name__ == '__main__':
     datasetOOBPreds = datasetMyPreds
 
     datasetMyPreds = predict(datasetMyPreds, [0.1, 0.1])
-    datasetMyPreds = predict(datasetMyPreds, [0.2, 0.3])
+    datasetMyPreds = predict(datasetMyPreds, [0.4, 0.5])
+    datasetMyPreds = predict(datasetMyPreds, [0.9, 0.8])
 
     datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [0.2, 0.5])
 

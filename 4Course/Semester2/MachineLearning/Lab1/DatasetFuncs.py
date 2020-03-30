@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 
 def createRowsForDataset(dataset, xrange, yrange, label):
-    for i in range(40):
+    for i in range(100):
         x = np.random.rand() * (xrange[1] - xrange[0]) + xrange[0]
         y = np.random.rand() * (yrange[1] - yrange[0]) + yrange[0]
         dataset.append([x, y, label])
