@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from numpy import expand_dims
 
 model = VGG16()
-ixs = [2, 5, 7, 9, 13, 17]
+ixs = [1, 2]
 outputs = [model.layers[i].output for i in ixs]
 model = Model(inputs=model.inputs, outputs=outputs)
 
@@ -18,7 +18,7 @@ img = preprocess_input(img)
 
 features_maps = model.predict(img)
 
-square = 2
+square = 8
 for fmap in features_maps:
     ix = 1
     for _ in range(square):

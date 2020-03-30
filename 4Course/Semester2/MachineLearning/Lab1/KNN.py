@@ -16,12 +16,15 @@ def getKNearest(dataset, newP, k):
 
 def getProbabilities(dataset, newP):
     nearest = getKNearest(dataset, newP, 10)
-    total_rows = len(dataset)
+    total_rows = len(nearest)
     probs = {}
     for point in nearest:
-        probs[int(point[1])] = 0
+        probs[int(point[1])] = 0.0
     for point in nearest:
         probs[int(point[1])] += 1
+    for key in probs:
+        probs[key] /= float(total_rows)
+
     return probs
 
 def predict(dataset, newP):
@@ -29,7 +32,6 @@ def predict(dataset, newP):
     label = max(probs, key=probs.get)
     newP.append(label)
     dataset = np.append(dataset, [newP], axis=0)
-    print("Label:", label)
     return dataset
 
 def outOfBoxPredict(dataset, newP):
@@ -38,7 +40,6 @@ def outOfBoxPredict(dataset, newP):
     predictions = classifier.predict_proba([newP])[0]
     label = np.argmax(predictions)
     newP.append(label)
-    print("Label:", label)
     dataset = np.append(dataset, [newP], axis=0)
     return dataset
 
@@ -46,14 +47,19 @@ if __name__ == '__main__':
     datasetMyPreds = createDataset()
     datasetOOBPreds = datasetMyPreds
 
-    datasetMyPreds = predict(datasetMyPreds, [5, 7])
-    datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [10, 1])
+    #datasetMyPreds = predict(datasetMyPreds, [5, 7])
+    #datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [10, 1])
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    ax1.set_title("InHouseKNN")
-    ax2.set_title("SkLearnKNN")
+    fig, axs = plt.subplots(2, 2, sharey=True)
+    axs[0, 0].set_title("InHouseNaiveBayes")
+    axs[0, 1].set_title("SkLearnNaiveBayes")
 
-    plotDataset(datasetMyPreds, ax1)
-    plotDataset(datasetOOBPreds, ax2)
+    heatmap(datasetMyPreds, getProbabilities, axs[0, 0])
+
+    plotDataset(datasetMyPreds, axs[0, 0])
+    plotDataset(datasetOOBPreds, axs[0, 1])
+
+    plotROCcurve(datasetMyPreds, 0, getProbabilities, axs[1, 0])
+    plotROCcurve(datasetMyPreds, 1, getProbabilities, axs[1, 1])
 
     plt.show()

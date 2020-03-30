@@ -47,6 +47,20 @@ def predictOutOfBox(dataset, newP):
     dataset = np.append(dataset, [newP], axis=0)
     return dataset
 
+def getDataForROC(dataset):
+    labels = dataset[:,2]
+    preds = []
+    for row in dataset:
+        prob = getProbabilities(dataset, row)
+        preds.append(prob[row[-1]])
+    return labels, preds
+
+def ROC_curves(dataset):
+    dataset_copy = dataset
+    labels, preds = getDataForROC(dataset_copy)
+    fpr, tpr, _ = roc_curve(labels, preds, pos_label = 2)
+    return fpr, tpr
+
 if __name__ == '__main__':
     np.random.seed(1)
     num_observations = 50
@@ -54,14 +68,8 @@ if __name__ == '__main__':
     x1 = np.random.multivariate_normal([0.5, 0.5], [[1, 0.5], [0.5, 1]], num_observations)
     x2 = np.random.multivariate_normal([5, 5], [[1, 0.5], [0.5, 1]], num_observations)
 
-    print("X1", x1)
-    print("X2", x2)
-
     simulated_separableish_features = np.vstack((x1, x2)).astype(np.float32)
     simulated_labels = np.hstack((np.zeros(num_observations), np.ones(num_observations)))
-
-    print("SSF", simulated_separableish_features)
-    print("SL", simulated_labels)
 
     datasetMyPreds = []
     for i in range(len(simulated_separableish_features)):
@@ -70,7 +78,6 @@ if __name__ == '__main__':
 
     datasetOOBPreds = datasetMyPreds
 
-
     datasetMyPreds = predict(datasetMyPreds, list(simulated_separableish_features[0]))
     datasetMyPreds = predict(datasetMyPreds, [0, 0.5])
     datasetMyPreds = predict(datasetMyPreds, [0.5, 0])
@@ -78,10 +85,10 @@ if __name__ == '__main__':
     datasetOOBPreds = predictOutOfBox(datasetOOBPreds, [3, 0])
 
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    ax1.set_title("InHouseLogistic")
-    ax2.set_title("SkLearnLogistic")
-    plotDataset(datasetMyPreds, ax1)
-    plotDataset(datasetOOBPreds, ax2)
+    fig, axs = plt.subplots(1, 2, sharey=True)
+    axs[0].set_title("InHouseLogistic")
+    axs[1].set_title("SkLearnLogistic")
+    plotDataset(datasetMyPreds, axs[0])
+    plotDataset(datasetOOBPreds, axs[1])
 
     plt.show()
