@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from numpy import expand_dims
 
 model = VGG16()
-ixs = [1, 2]
+ixs = [2, 5, 9, 13, 17]
 outputs = [model.layers[i].output for i in ixs]
 model = Model(inputs=model.inputs, outputs=outputs)
 
@@ -28,4 +28,4 @@ for fmap in features_maps:
             ax.set_yticks([])
             plt.imshow(fmap[0, :, :, ix-1])
             ix+=1
-plt.show()
+    plt.show()

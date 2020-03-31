@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from DatasetFuncs import *
+from UsefullFuncs import *
 from sklearn.linear_model import LogisticRegression
 
 

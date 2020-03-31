@@ -6,14 +6,14 @@ from math import exp
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import GaussianNB
 import numpy as np
-from DatasetFuncs import *
+from UsefullFuncs import *
 
 def mean(numbers):
-    return sum(numbers)/float(len(numbers))
+    return sum(numbers) / float(len(numbers))
 
 def stdev(numbers):
     avg = mean(numbers)
-    variance = sum([(x-avg/2)**2 for x in numbers]) / float(len(numbers))
+    variance = sum([(x-avg)**2 for x in numbers]) / float(len(numbers) - 1)
     return sqrt(variance)
 
 def summarizeDataset(dataset):
@@ -30,17 +30,17 @@ def summarizeByClass(dataset):
 
 def calculatePropability(x, mean, stdev):
     exponent = exp(-((x-mean)**2 / (2 *  stdev**2)))
-    return (1 / (sqrt(2*pi*stdev))) * exponent
+    return (1 / (sqrt(2*pi) * stdev)) * exponent
 
 def calculateClassPropabilities(summaries, row):
     total_rows = sum([summaries[label][0][2] for label in summaries])
-    probalities = {}
+    probabilities = {}
     for class_value, class_summaries in summaries.items():
-        probalities[class_value] = summaries[class_value][0][2]/float(total_rows)
+        probabilities[class_value] = summaries[class_value][0][2]/float(total_rows)
         for i in range(len(class_summaries)):
             mean, stdev, count = class_summaries[i]
-            probalities[class_value] += calculatePropability(row[i], mean, stdev)
-    return probalities
+            probabilities[class_value] *= calculatePropability(row[i], mean, stdev)
+    return probabilities
 
 def getProbabilities(dataset, row):
     summaries = summarizeByClass(dataset)

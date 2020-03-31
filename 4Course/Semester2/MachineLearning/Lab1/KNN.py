@@ -1,4 +1,4 @@
-from DatasetFuncs import *
+from UsefullFuncs import *
 from math import sqrt
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
