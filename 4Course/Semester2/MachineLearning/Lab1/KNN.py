@@ -51,8 +51,8 @@ if __name__ == '__main__':
     #datasetOOBPreds = outOfBoxPredict(datasetOOBPreds, [10, 1])
 
     fig, axs = plt.subplots(2, 2, sharey=True)
-    axs[0, 0].set_title("InHouseNaiveBayes")
-    axs[0, 1].set_title("SkLearnNaiveBayes")
+    axs[0, 0].set_title("InHouseKNN")
+    axs[0, 1].set_title("SkLearnKNN")
 
     heatmap(datasetMyPreds, getProbabilities, axs[0, 0])
 
