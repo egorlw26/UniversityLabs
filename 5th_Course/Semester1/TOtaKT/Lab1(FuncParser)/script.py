@@ -152,13 +152,8 @@ class FuncParser:
         else:
             raise Exception(f"No value founded for {varName}")
             
-
-
     def hasNextSymbol(self):
         return self.currentCharIndex < len(self.expression)
-
-    def isNext(self, string):
-        return self.expression[self.currentCharIndex:self.currentCharIndex + len(string)] == string
 
     def getCurrentSymbol(self):
         return self.expression[self.currentCharIndex]
@@ -186,10 +181,8 @@ class FuncParser:
             else:
                 break
             self.currentCharIndex += 1
-        
         if len(strNumber) == 0:
             raise Exception("Unexpected length of number")
-        
         # print(f"Returning: {strNumber}, cur index: {self.currentCharIndex}")
         return float(strNumber)
 
