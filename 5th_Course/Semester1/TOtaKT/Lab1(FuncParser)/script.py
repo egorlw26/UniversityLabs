@@ -1,8 +1,8 @@
 import math
 
 CONSTANTS = {
-    'PI': math.pi,
-    'E': math.e
+    'pi': math.pi,
+    'e': math.e
 }
 
 FUNCTIONS = {
@@ -11,7 +11,7 @@ FUNCTIONS = {
     'tg': math.tan,
     'abs': abs,
     'exp': math.exp,
-    'pow': math.pow
+    'pow': math.pow,
     'sqrt': math.sqrt
 }
 
@@ -19,7 +19,6 @@ NUMBERS = "0123456789"
 
 VARIABLES = "abcdefghijklmnopqrstuvwxyz"
 
-# Example: -(7*4) + 3 
 # Main idea: Expression -> Addition -> Multiplication -> Brackets -> Inner Expression
 
 class FuncParser:
@@ -34,10 +33,9 @@ class FuncParser:
     def parseAdditions(self):
         # we get an array of values before first '+' or '-' symbol (left part)
         values = [self.parseMultiplication()]
-
-        self.skipWhitespacesFromCurrentIndex()
         
         while self.hasNextSymbol():
+            self.skipWhiteSpacesFromCurrentIndex()
             char = self.getCurrentSymbol()
             if char == '+':
                 self.currentCharIndex += 1
@@ -55,8 +53,9 @@ class FuncParser:
         # left side from first '*' or '/' symbol
         values = [self.parseBrackets()]
         
-        while True:
-            self.skipWhitespacesFromCurrentIndex()
+        while self.hasNextSymbol():
+            self.skipWhiteSpacesFromCurrentIndex()
+            # print(f"Current index in multiplication: {self.currentCharIndex}")
             char = self.getCurrentSymbol()
             if char == '*':
                 self.currentCharIndex += 1
@@ -76,13 +75,13 @@ class FuncParser:
         return resVal
 
     def parseBrackets(self):
-        self.skipWhitespacesFromCurrentIndex()
+        self.skipWhiteSpacesFromCurrentIndex()
         char = self.getCurrentSymbol()
 
         if char == '(':
             self.currentCharIndex += 1
             value = self.parseExpression()
-            self.skipWhitespacesFromCurrentIndex()
+            self.skipWhiteSpacesFromCurrentIndex()
 
             if self.getCurrentSymbol() != ')':
                 raise Exception("Can't find closing bracket, something's wrong")
@@ -93,15 +92,67 @@ class FuncParser:
 
     # returning either number or variable
     def parseValue(self):
-        self.skipWhitespacesFromCurrentIndex()
+        self.skipWhiteSpacesFromCurrentIndex()
         char = self.getCurrentSymbol()
         if char in NUMBERS:
             return self.parseNumber()
         else:
-            return self.parseArgument()
+            return self.parseVariable()
         
+    def parseVariable(self):
+        self.skipWhiteSpacesFromCurrentIndex()
+        variableValue = None
+        strVariable = ''
+        
+        while self.hasNextSymbol():
+            char = self.getCurrentSymbol()
+            if char.lower() in VARIABLES:
+                strVariable += char.lower()
+                self.currentCharIndex += 1
+            else:
+                break
+
+        if strVariable in FUNCTIONS:
+            arg = self.parseArgument()
+            func = FUNCTIONS.get(strVariable.lower())
+            return float(func(arg))
+        elif strVariable in CONSTANTS:
+            return CONSTANTS.get(strVariable)
+        elif strVariable in VARIABLES:
+            variableValue = self.values[strVariable]
+            if variableValue != None:
+                self.currentCharIndex += 1
+                return variableValue
+            else:
+                raise Exception("Can't find value for 'x' variable")
+        else:
+            raise Exception("Unexpected name of variable")
+
     def parseArgument(self):
-        pass
+        self.skipWhiteSpacesFromCurrentIndex()
+        varName = ''
+        char = self.getCurrentSymbol()
+        if char != '(':
+            raise Exception ("No open bracket for argument!")
+        
+        self.currentCharIndex += 1
+        self.skipWhiteSpacesFromCurrentIndex()
+        while (self.getCurrentSymbol()) != ')':
+            char = self.getCurrentSymbol()
+            if char in VARIABLES:
+                varName += char
+                self.currentCharIndex += 1
+            else:
+                raise Exception("Wrong format of argument")
+        if len(varName) == 0:
+            raise Exception("No arguments for function")
+        
+        if varName in self.values.keys():
+            return self.values[varName]
+        else:
+            raise Exception(f"No value founded for {varName}")
+            
+
 
     def hasNextSymbol(self):
         return self.currentCharIndex < len(self.expression)
@@ -113,7 +164,7 @@ class FuncParser:
         return self.expression[self.currentCharIndex]
 
     def parseNumber(self):
-        self.skipWhitespacesFromCurrentIndex()
+        self.skipWhiteSpacesFromCurrentIndex()
         strNumber = ''
         dotFound = False
         currentChar = ''
@@ -121,6 +172,7 @@ class FuncParser:
         # As we expecting number, than we expecting dot or some number
         # We don't allow dot without 0 at start, so '.25' isn't valid
         while self.hasNextSymbol():
+            self.skipWhiteSpacesFromCurrentIndex()
             currentChar = self.getCurrentSymbol()
             if currentChar == '.':
                 if dotFound:
@@ -137,12 +189,17 @@ class FuncParser:
         
         if len(strNumber) == 0:
             raise Exception("Unexpected length of number")
-
+        
+        # print(f"Returning: {strNumber}, cur index: {self.currentCharIndex}")
         return float(strNumber)
 
     # skipping all white symbols until non-white found
-    def skipWhitespacesFromCurrentIndex(self):
+    def skipWhiteSpacesFromCurrentIndex(self):
         while self.hasNextSymbol() and self.getCurrentSymbol() in ' \n':
             self.currentCharIndex += 1
         return
+
+if __name__ == "__main__":
+    parser = FuncParser("abs(x)", {'x' : -5})
+    print(f"Result of parsing: {parser.parseExpression()}")
 
