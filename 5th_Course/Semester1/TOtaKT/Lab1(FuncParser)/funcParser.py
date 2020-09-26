@@ -23,11 +23,16 @@ VARIABLES = "abcdefghijklmnopqrstuvwxyz"
 # Main idea: Expression -> Addition -> Multiplication -> Brackets -> Negative -> Inner Expression
 
 class FuncParser:
-    def __init__(self, expression, values = None):
+    def __init__(self, expression):
         self.expression = expression
         self.currentCharIndex = 0
-        self.values = {} if values == None else values.copy()
     
+    def getValue(self, values = None):
+        self.values = {} if values == None else values.copy()
+        result =  self.parseExpression()
+        self.currentCharIndex = 0
+        return result
+
     def parseExpression(self):
         return self.parseAdditions()
 
