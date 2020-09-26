@@ -1,32 +1,33 @@
 import math
+import numpy as np
 
 CONSTANTS = {
-    'pi': math.pi,
-    'e': math.e
+    'pi': np.pi,
+    'e': np.e
 }
 
 FUNCTIONS = {
-    'sin': math.sin,
-    'cos': math.cos,
-    'tg': math.tan,
-    'abs': abs,
-    'exp': math.exp,
-    'pow': math.pow,
-    'sqrt': math.sqrt
+    'sin': np.sin,
+    'cos': np.cos,
+    'tg': np.tan,
+    'abs': np.abs,
+    'exp': np.exp,
+    'pow': np.power,
+    'sqrt': np.sqrt
 }
 
 NUMBERS = "0123456789"
 
 VARIABLES = "abcdefghijklmnopqrstuvwxyz"
 
-# Main idea: Expression -> Addition -> Multiplication -> Brackets -> Inner Expression
+# Main idea: Expression -> Addition -> Multiplication -> Brackets -> Negative -> Inner Expression
 
 class FuncParser:
     def __init__(self, expression, values = None):
         self.expression = expression
         self.currentCharIndex = 0
         self.values = {} if values == None else values.copy()
-
+    
     def parseExpression(self):
         return self.parseAdditions()
 
@@ -55,7 +56,6 @@ class FuncParser:
         
         while self.hasNextSymbol():
             self.skipWhiteSpacesFromCurrentIndex()
-            # print(f"Current index in multiplication: {self.currentCharIndex}")
             char = self.getCurrentSymbol()
             if char == '*':
                 self.currentCharIndex += 1
@@ -83,10 +83,17 @@ class FuncParser:
             value = self.parseExpression()
             self.skipWhiteSpacesFromCurrentIndex()
 
-            if self.getCurrentSymbol() != ')':
-                raise Exception("Can't find closing bracket, something's wrong")
+            if not self.hasNextSymbol() or self.getCurrentSymbol() != ')':
+                raise Exception("Can't find ')', something's wrong")
             self.currentCharIndex += 1
             return value
+        else:
+            return self.parseNegativeValue()
+
+    def parseNegativeValue(self):
+        self.skipWhiteSpacesFromCurrentIndex()
+        if self.skipIfNext('-'):
+            return -1 * self.parseBrackets()
         else:
             return self.parseValue()
 
@@ -113,44 +120,47 @@ class FuncParser:
                 break
 
         if strVariable in FUNCTIONS:
-            arg = self.parseArgument()
+            args = self.parseArguments()
             func = FUNCTIONS.get(strVariable.lower())
-            return float(func(arg))
+            return float(func(*args))
         elif strVariable in CONSTANTS:
             return CONSTANTS.get(strVariable)
-        elif strVariable in VARIABLES:
+        elif strVariable in self.values.keys():
             variableValue = self.values[strVariable]
             if variableValue != None:
-                self.currentCharIndex += 1
                 return variableValue
             else:
-                raise Exception("Can't find value for 'x' variable")
+                raise Exception(f"Can't find value for {strVariable} variable")
         else:
-            raise Exception("Unexpected name of variable")
+            raise Exception(f"Unexpected name of function or constant: {strVariable}")
+    
+    def skipIfNext(self, symbol):
+        if not self.hasNextSymbol():
+            raise Exception(f"Can't find '{symbol}', something's wrong")
+        if self.getCurrentSymbol() == symbol:
+            self.currentCharIndex += 1
+            return True
+        else:
+            return False
 
-    def parseArgument(self):
+    def parseArguments(self):
         self.skipWhiteSpacesFromCurrentIndex()
-        varName = ''
+        args = []
         char = self.getCurrentSymbol()
         if char != '(':
             raise Exception ("No open bracket for argument!")
-        
+
         self.currentCharIndex += 1
         self.skipWhiteSpacesFromCurrentIndex()
-        while (self.getCurrentSymbol()) != ')':
-            char = self.getCurrentSymbol()
-            if char in VARIABLES:
-                varName += char
-                self.currentCharIndex += 1
-            else:
-                raise Exception("Wrong format of argument")
-        if len(varName) == 0:
-            raise Exception("No arguments for function")
-        
-        if varName in self.values.keys():
-            return self.values[varName]
-        else:
-            raise Exception(f"No value founded for {varName}")
+        while not self.skipIfNext(')'):
+            self.skipWhiteSpacesFromCurrentIndex()
+            if len(args) > 0:
+                if not self.skipIfNext(','):
+                    raise Exception("Comma was not found")
+                else:
+                    self.skipWhiteSpacesFromCurrentIndex()                  
+            args.append(self.parseExpression())
+        return args
             
     def hasNextSymbol(self):
         return self.currentCharIndex < len(self.expression)
@@ -191,8 +201,4 @@ class FuncParser:
         while self.hasNextSymbol() and self.getCurrentSymbol() in ' \n':
             self.currentCharIndex += 1
         return
-
-if __name__ == "__main__":
-    parser = FuncParser("abs(x)", {'x' : -5})
-    print(f"Result of parsing: {parser.parseExpression()}")
 
