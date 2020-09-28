@@ -54,13 +54,11 @@ void AES::MixColumn(std::vector<uint8_t>& column)
 	column[0] = xTime(a[0]) ^ MultBy(a[1], 0x03) ^ a[2] ^ a[3];
 	column[1] = a[0] ^ xTime(a[1]) ^ MultBy(a[2], 0x03) ^ a[3];
 	column[2] = a[0] ^ a[1] ^ xTime(a[2]) ^ MultBy(a[3], 0x03);
-	column[2] = MultBy(a[0], 0x03) ^ a[1] ^ a[2] ^ xTime(a[3]);
+	column[3] = MultBy(a[0], 0x03) ^ a[1] ^ a[2] ^ xTime(a[3]);
 }
 
 void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<uint8_t>>& w)
 {
-	//w = std::vector<std::vector<uint8_t>>(4, std::vector<uint8_t>(Nb * (Nr + 1)));
-
 	// First Round key
 	for (int i = 0; i < 4; ++i) 
 		for (int j = 0; j < Nk; ++j)
@@ -198,7 +196,92 @@ std::vector<uint8_t> AES::EncryptBlock(const std::vector<uint8_t>& input,
 		for (int j = 0; j < Nb; ++j)
 			state[i][j] = input[i + 4 * j];
 
-	// Finish
+	// DEBUG
+	std::cout << "STATE ROUND 0:" << std::endl;
+
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < Nb; ++j)
+			std::cout << std::hex << int(state[j][i]);
+
+	std::cout << std::endl;
+
+	std::cout << "ROUND KEY 0:" << std::endl;
+
+	for (int i = 0; i < 4; ++i)
+		for (int j = 0; j < Nb; ++j)
+			std::cout << std::hex << int(roundKeys[j][i]);
+
+	std::cout << std::endl;
+
+	// !DEBUG
+
+	AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, 0));
+
+	for (int round = 1; round < Nr; ++round)
+	{
+		std::cout << "STATE ROUND " << round << ": " << std::endl;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < Nb; ++j)
+				std::cout << std::hex << int(state[j][i]);
+		std::cout<<std::endl;
+
+		SubBytes(state);
+
+		std::cout << "SBOX ROUND " << round << ": " << std::endl;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < Nb; ++j)
+				std::cout << std::hex << int(state[j][i]);
+		std::cout << std::endl;
+
+		ShiftRows(state);
+
+		std::cout << "SROWS ROUND " << round << ": " << std::endl;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < Nb; ++j)
+				std::cout << std::hex << int(state[j][i]);
+		std::cout << std::endl;
+
+		MixColumns(state);
+
+		std::cout << "MCOLUMNS ROUND " << round << ": " << std::endl;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < Nb; ++j)
+				std::cout << std::hex << int(state[j][i]);
+		std::cout << std::endl;
+
+		AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, round));
+
+
+		std::cout << "ADD ROUND KEY " << round << ": " << std::endl;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < Nb; ++j)
+				std::cout << std::hex << int(state[j][i]);
+		std::cout << std::endl;
+	}
+
+	SubBytes(state);
+	ShiftRows(state);
+	AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, Nr));
+
+	std::vector<uint8_t> res(16);
+	for (int i = 0; i < 4; ++i)
+		for(int j = 0; j < Nb; ++j)
+			res[i + j * 4] = state[i][j];
+
+	return res;
+}
+
+std::vector<uint8_t> AES::GetKeyFromRoundKeys(const std::vector<std::vector<uint8_t>>& rKeys, const int& blockIndex)
+{
+	std::vector<uint8_t> res(4*Nb);
+	for (int i = 0; i < 4; ++i)
+	{
+		res[0 + i * 4] = rKeys[0][blockIndex * Nb + i];
+		res[1 + i * 4] = rKeys[1][blockIndex * Nb + i];
+		res[2 + i * 4] = rKeys[2][blockIndex * Nb + i];
+		res[3 + i * 4] = rKeys[3][blockIndex * Nb + i];
+	}
+	return res;
 }
 
 std::vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key)
@@ -209,5 +292,14 @@ std::vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& input, const std::
 	
 	std::vector<std::vector<uint8_t>> roundKeys(4, std::vector<uint8_t>(Nb * (Nr + 1)));
 	KeyExpansion(key, roundKeys);
+	
+	std::vector<uint8_t> out;
+	
+	for (int i = 0; i < input.size(); i += blockBytesLen)
+	{
+		auto tmp = EncryptBlock(std::vector<uint8_t>(input.begin(), input.begin() + 16), roundKeys);
+		out.insert(out.end(), tmp.begin(), tmp.end());
+	}
 
+	return out;
 }

@@ -31,6 +31,8 @@ private:
 	void KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<uint8_t>>& res);
 	void AddRoundKey(std::vector<std::vector<uint8_t>>& state, const std::vector<uint8_t>& key);
 
+	std::vector<uint8_t> GetKeyFromRoundKeys(const std::vector<std::vector<uint8_t>>& rKeys, const int& blockIndex);
+
 	std::vector<uint8_t> EncryptBlock(const std::vector<uint8_t>& input, 
 		const std::vector<std::vector<uint8_t>>& roundKeys);
 public:
