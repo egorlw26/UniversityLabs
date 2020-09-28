@@ -235,7 +235,8 @@ uint8_t AES::MultBy(const uint8_t& input, const uint8_t& value)
 
 void AES::PushPaddingZeros(std::vector<uint8_t>& msg)
 {
-	for (int i = 0; i < msg.size() - 4 * Nb; ++i)
+	int steps = 16 * ceil(msg.size() / 16.0) - msg.size();
+	for (int i = 0; i < steps ; ++i)
 		msg.push_back(0x00);
 }
 
