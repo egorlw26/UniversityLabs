@@ -28,6 +28,13 @@ private:
 	void ShiftRow(std::vector<uint8_t>& row, const int& step);
 	void MixColumns(std::vector<std::vector<uint8_t>>& state);
 	void MixColumn(std::vector<uint8_t>& column);
+
+	void InvSubBytes(std::vector<std::vector<uint8_t>>& state);
+	void InvShiftRows(std::vector<std::vector<uint8_t>>& state);
+	void InvShiftRow(std::vector<uint8_t>& row, const int& step);
+	void InvMixColumns(std::vector<std::vector<uint8_t>>& state);
+	void InvMixColumn(std::vector<uint8_t>& column);
+
 	void KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<uint8_t>>& res);
 	void AddRoundKey(std::vector<std::vector<uint8_t>>& state, const std::vector<uint8_t>& key);
 
@@ -35,8 +42,11 @@ private:
 
 	std::vector<uint8_t> EncryptBlock(const std::vector<uint8_t>& input, 
 		const std::vector<std::vector<uint8_t>>& roundKeys);
+	std::vector<uint8_t> DecryptBlock(const std::vector<uint8_t>& input,
+		const std::vector<std::vector<uint8_t>>& roundKeys);
 public:
 	std::vector<uint8_t> Encrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key);
+	std::vector<uint8_t> Decrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key);
 
 	AES();
 };
