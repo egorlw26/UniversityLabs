@@ -11,6 +11,7 @@ private:
 	int Nb;
 	int Nk;
 	int Nr;
+	std::vector<std::vector<uint8_t>> m_roundKeys;
 
 	unsigned int blockBytesLen;
 
@@ -44,9 +45,11 @@ private:
 		const std::vector<std::vector<uint8_t>>& roundKeys);
 	std::vector<uint8_t> DecryptBlock(const std::vector<uint8_t>& input,
 		const std::vector<std::vector<uint8_t>>& roundKeys);
-public:
-	std::vector<uint8_t> Encrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key);
-	std::vector<uint8_t> Decrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key);
 
-	AES();
+	std::vector<uint8_t> readBlockFromFile(std::string filePath);
+public:
+	void Encrypt(std::string filePath, std::string outputFilePath);
+	void Decrypt(std::string filePath, std::string outputFilePath);
+
+	AES(int keyLen, const std::vector<uint8_t>& key);
 };

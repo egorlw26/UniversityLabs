@@ -1,30 +1,39 @@
 #include <stdio.h>
 #include "AES.h"
 #include <iostream>
+#include <fstream>
+#include <chrono>
+
+void generate()
+{
+	std::ofstream file("../../TestFiles/testFile1Gb.txt");
+	for (int i = 0; i < 1000; ++i)
+	{
+		std::string s;
+		for (int j = 0; j < 1024 * 1024; ++j)
+		{
+			s += 0x30 + (uint8_t)(rand() % 9);
+		}
+		file.write(s.c_str(), s.size());
+	}
+}
 
 int main()
 {
-	std::vector<uint8_t> msg1 = 
-	{
-		0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-		0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
-	};
-	std::vector<uint8_t> msg2 =
-	{
-		0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
-		0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
-	};
 	std::vector<uint8_t> key =
 	{
-		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+		0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
 	};
 
-	auto aes = AES();
-	std::vector<uint8_t> decrypted = aes.Decrypt(msg2, key);
+	AES aes(128, key);
+	auto start = std::chrono::system_clock::now();
+	aes.Encrypt("../../TestFiles/testFile1Mb.txt", "../../Results/encrypted1Mb.txt");
+	std::cout << "Encrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
 	
-	for (uint8_t s : decrypted)
-		std::cout << std::hex << int(s) << std::endl;
+	start = std::chrono::system_clock::now();
+	aes.Decrypt("../../Results/encrypted1Mb.txt", "../../Results/decrypted1Mb.txt");
+	std::cout << "Decrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
 
 	return 0;
 }

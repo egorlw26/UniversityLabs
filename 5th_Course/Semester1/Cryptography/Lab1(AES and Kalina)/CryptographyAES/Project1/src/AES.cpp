@@ -1,18 +1,38 @@
 #include "AES.h"
+#include <fstream>
 
-AES::AES()
+AES::AES(int keyLen, const std::vector<uint8_t>& key)
 {
-	// Length of key is 128 bit
-	this->Nb = 4;
-	this->Nk = 4;
-	this->Nr = 10;
+	Nb = 4;
+	switch (keyLen)
+	{
+	case 128:
+		Nk = 4;
+		Nr = 10;
+		break;
+	case 192:
+		Nk = 6;
+		Nr = 12;
+		break;
+	case 256:
+		Nk = 8;
+		Nr = 14;
+		break;
+	default:
+		throw "Incorrect length of key";
+		break;
+	}
 
 	blockBytesLen = 4 * this->Nb * sizeof(unsigned char);
+
+	std::vector<std::vector<uint8_t>> roundKeys(4, std::vector<uint8_t>(Nb * (Nr + 1)));
+	KeyExpansion(key, roundKeys);
+	m_roundKeys = roundKeys;
 };
 
 void AES::SubBytes(std::vector<std::vector<uint8_t>>& state)
 {
-	for (int i =0; i < 4; ++i)
+	for (int i = 0; i < 4; ++i)
 		for (int j = 0; j < Nb; ++j)
 		{
 			auto t = state[i][j];
@@ -110,8 +130,7 @@ void AES::InvMixColumn(std::vector<uint8_t>& column)
 
 void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<uint8_t>>& w)
 {
-	// First Round key
-	for (int i = 0; i < 4; ++i) 
+	for (int i = 0; i < 4; ++i)
 		for (int j = 0; j < Nk; ++j)
 			w[i][j] = key[i + 4 * j];
 
@@ -132,11 +151,11 @@ void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<
 		if (i % Nk == 0)
 		{
 			LeftShiftColumn(nColumn);
-			SubColumn(nColumn);			
+			SubColumn(nColumn);
 			nColumn = XorColumns(Wi_m_Nk, nColumn, GetRConColumn(i / Nk - 1));
 		}
 		else
-		{ 
+		{
 			nColumn = XorColumns(nColumn, Wi_m_Nk, { 0x00, 0x00, 0x00, 0x00 });
 		}
 
@@ -150,7 +169,7 @@ void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<
 void AES::AddRoundKey(std::vector<std::vector<uint8_t>>& state, const std::vector<uint8_t>& key)
 {
 	for (int i = 0; i < 4; ++i)
-		for (int j = 0; j < 4; ++j)
+		for (int j = 0; j < Nb; ++j)
 			state[i][j] ^= key[i + 4 * j];
 }
 
@@ -184,7 +203,7 @@ std::vector<uint8_t> AES::GetRConColumn(const int& index)
 {
 	std::vector<uint8_t> res(4);
 	for (int i = 0; i < 4; ++i)
-		res[i] = RCon[10*i + index];
+		res[i] = RCon[10 * i + index];
 	return res;
 }
 
@@ -236,8 +255,8 @@ uint8_t AES::MultBy(const uint8_t& input, const uint8_t& value)
 void AES::PushPaddingZeros(std::vector<uint8_t>& msg)
 {
 	int steps = 16 * ceil(msg.size() / 16.0) - msg.size();
-	for (int i = 0; i < steps ; ++i)
-		msg.push_back(0x00);
+	for (int i = 0; i < steps; ++i)
+		msg.push_back(0x30);
 }
 
 std::vector<uint8_t> AES::EncryptBlock(const std::vector<uint8_t>& input,
@@ -262,9 +281,9 @@ std::vector<uint8_t> AES::EncryptBlock(const std::vector<uint8_t>& input,
 	ShiftRows(state);
 	AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, Nr));
 
-	std::vector<uint8_t> res(16);
+	std::vector<uint8_t> res(4 * Nb);
 	for (int i = 0; i < 4; ++i)
-		for(int j = 0; j < Nb; ++j)
+		for (int j = 0; j < Nb; ++j)
 			res[i + j * 4] = state[i][j];
 
 	return res;
@@ -277,7 +296,7 @@ std::vector<uint8_t> AES::DecryptBlock(const std::vector<uint8_t>& input,
 	for (int i = 0; i < 4; ++i)
 		for (int j = 0; j < Nb; ++j)
 			state[i][j] = input[i + 4 * j];
-	
+
 	AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, Nr));
 
 	for (int round = Nr - 1; round > 0; --round)
@@ -292,7 +311,7 @@ std::vector<uint8_t> AES::DecryptBlock(const std::vector<uint8_t>& input,
 	InvSubBytes(state);
 	AddRoundKey(state, GetKeyFromRoundKeys(roundKeys, 0));
 
-	std::vector<uint8_t> res(16);
+	std::vector<uint8_t> res(4 * Nb);
 	for (int i = 0; i < 4; ++i)
 		for (int j = 0; j < Nb; ++j)
 			res[i + j * 4] = state[i][j];
@@ -302,7 +321,7 @@ std::vector<uint8_t> AES::DecryptBlock(const std::vector<uint8_t>& input,
 
 std::vector<uint8_t> AES::GetKeyFromRoundKeys(const std::vector<std::vector<uint8_t>>& rKeys, const int& blockIndex)
 {
-	std::vector<uint8_t> res(4*Nb);
+	std::vector<uint8_t> res(4 * Nb);
 	for (int i = 0; i < 4; ++i)
 	{
 		res[0 + i * 4] = rKeys[0][blockIndex * Nb + i];
@@ -313,41 +332,64 @@ std::vector<uint8_t> AES::GetKeyFromRoundKeys(const std::vector<std::vector<uint
 	return res;
 }
 
-std::vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key)
+std::vector<uint8_t> AES::readBlockFromFile(std::string filePath)
 {
-	// If input is less than 16 bytes
-	auto inputCopy = input;
-	PushPaddingZeros(inputCopy);
-	
-	std::vector<std::vector<uint8_t>> roundKeys(4, std::vector<uint8_t>(Nb * (Nr + 1)));
-	KeyExpansion(key, roundKeys);
-	
-	std::vector<uint8_t> out;
-	
-	for (int i = 0; i < inputCopy.size(); i += blockBytesLen)
-	{
-		auto tmp = EncryptBlock(std::vector<uint8_t>(inputCopy.begin() + i, inputCopy.begin() + i + blockBytesLen), roundKeys);
-		out.insert(out.end(), tmp.begin(), tmp.end());
-	}
+	std::ofstream file(filePath);
+	if (!file.is_open())
+		throw "Something went wrong while opening file.";
 
-	return out;
+
 }
 
-std::vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& input, const std::vector<uint8_t>& key)
+void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 {
-	auto inputCopy = input;
-	PushPaddingZeros(inputCopy);
+	std::ifstream inputFile(inputFilePath);
+	if (!inputFile.is_open())
+		throw "Something went wrong while opening input file.";
 
-	std::vector<std::vector<uint8_t>> roundKeys(4, std::vector<uint8_t>(Nb * (Nr + 1)));
-	KeyExpansion(key, roundKeys);
+	std::ofstream outputFile(outputFilePath);
+	if(!outputFile.is_open())
+		throw "Something went wrong while opening output file.";
 
-	std::vector<uint8_t> out;
+	inputFile.seekg(0, inputFile.end);
+	long long fileLength = inputFile.tellg();
+	inputFile.seekg(0, inputFile.beg);
 
-	for (int i = 0; i < inputCopy.size(); i += blockBytesLen)
+	while (inputFile.tellg() <= fileLength && inputFile.tellg() >= 0)
 	{
-		auto tmp = DecryptBlock(std::vector<uint8_t>(inputCopy.begin() + i, inputCopy.begin() + i + blockBytesLen), roundKeys);
-		out.insert(out.end(), tmp.begin(), tmp.end());
-	}
+		std::vector<uint8_t> input(blockBytesLen);
+		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
 
-	return out;
+		auto tmp = EncryptBlock(input, m_roundKeys);
+		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+	}
+	
+	inputFile.close();
+	outputFile.close();
+}
+
+void AES::Decrypt(std::string inputFilePath, std::string outputFilePath)
+{
+	std::ifstream inputFile(inputFilePath);
+	if (!inputFile.is_open())
+		throw "Something went wrong while opening input file.";
+
+	std::ofstream outputFile(outputFilePath);
+	if (!outputFile.is_open())
+		throw "Something went wrong while opening output file.";
+
+	inputFile.seekg(0, inputFile.end);
+	long long fileLength = inputFile.tellg();
+	inputFile.seekg(0, inputFile.beg);
+
+	while (inputFile.tellg() <= fileLength && inputFile.tellg() >= 0)
+	{
+		std::vector<uint8_t> input(blockBytesLen);
+		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
+
+		auto tmp = DecryptBlock(input, m_roundKeys);
+		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+	}
+	inputFile.close();
+	outputFile.close();
 }
