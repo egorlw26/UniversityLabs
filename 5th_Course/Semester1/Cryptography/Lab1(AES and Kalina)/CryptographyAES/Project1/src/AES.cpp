@@ -332,15 +332,6 @@ std::vector<uint8_t> AES::GetKeyFromRoundKeys(const std::vector<std::vector<uint
 	return res;
 }
 
-std::vector<uint8_t> AES::readBlockFromFile(std::string filePath)
-{
-	std::ofstream file(filePath);
-	if (!file.is_open())
-		throw "Something went wrong while opening file.";
-
-
-}
-
 void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 {
 	std::ifstream inputFile(inputFilePath);
@@ -355,7 +346,7 @@ void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 	long long fileLength = inputFile.tellg();
 	inputFile.seekg(0, inputFile.beg);
 
-	while (inputFile.tellg() <= fileLength && inputFile.tellg() >= 0)
+	for (int i = 0; i < fileLength; i+=blockBytesLen)
 	{
 		std::vector<uint8_t> input(blockBytesLen);
 		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
@@ -382,7 +373,7 @@ void AES::Decrypt(std::string inputFilePath, std::string outputFilePath)
 	long long fileLength = inputFile.tellg();
 	inputFile.seekg(0, inputFile.beg);
 
-	while (inputFile.tellg() <= fileLength && inputFile.tellg() >= 0)
+	for (int i = 0; i < fileLength; i += blockBytesLen)
 	{
 		std::vector<uint8_t> input(blockBytesLen);
 		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
