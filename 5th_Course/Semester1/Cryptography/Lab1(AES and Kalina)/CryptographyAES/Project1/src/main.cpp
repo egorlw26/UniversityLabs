@@ -10,9 +10,9 @@ void generate()
 	for (int i = 0; i < 1; ++i)
 	{
 		std::string s;
-		for (int j = 0; j < 256; ++j)
+		for (int j = 0; j < 1024; ++j)
 		{
-			s += 0x30 + (uint8_t)(rand() % 9);
+			s += 0x30 + rand()%9;
 		}
 		file.write(s.c_str(), s.size());
 	}
@@ -26,13 +26,15 @@ int main()
 		0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 	};
 
+	generate();
+
 	AES aes(128, key);
 	auto start = std::chrono::system_clock::now();
-	aes.Encrypt("../../TestFiles/testFileSmall.txt", "../../Results/encryptedSmall.txt");
+	aes.Encrypt("../../TestFiles/testFile10Mb.txt", "../../Results/encrypted10Mb.txt");
 	std::cout << "Encrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
 	
 	start = std::chrono::system_clock::now();
-	aes.Decrypt("../../Results/encryptedSmall.txt", "../../Results/decryptedSmall.txt");
+	aes.Decrypt("../../Results/encrypted10Mb.txt", "../../Results/decrypted10Mb.txt");
 	std::cout << "Decrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
 
 	return 0;
