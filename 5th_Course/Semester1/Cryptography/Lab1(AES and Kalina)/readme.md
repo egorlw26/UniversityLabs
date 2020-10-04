@@ -67,6 +67,11 @@ public:
 
 ![Aes Results](AesResults.png)
 
+
+Тести додані та проходять:
+
+![Aes Test Are Green](AesTestsGreen.png)
+
 # Kalyna
 Також існує документація з прикладами роботи, всіми проміжними кроками та необхідною інформацією **[Kalyna Documentation](https://eprint.iacr.org/2015/650)**, тому тут також не бачу сенсу затримуватись на тонкощах реалізації. За необхідне скажу лише, что часу для повного ознайомлення було мало, тому код погано оптимізовано, у результаті чого не всі результати будуть показані.
 
@@ -79,11 +84,11 @@ std::vector<uint64_t> key =
 		0x0001020304050607, 0x08090A0B0C0D0E0F
 	};
 
-Kalyna kalyna(2, 2, key);
+Kalyna kalyna(128, 128, key);
 kalyna.Encrypt("../../TestFiles/testFile10Mb.txt", "../../Results/kalynaFile10MbEncrypted.txt");
 kalyna.Decrypt("../../Results/kalynaFile10MbEncrypted.txt", "../../Results/kalynaFile10MbDecrypted.txt");
 ```
-З єдиною різницею, що у конструктор ми одразу передаємо к-ть стовпців та довжину ключа у більш зрозумілому вигляді. В даному випадку 2 значить, що довжина ключа 128 біт.
+
 
 Список реалізованих методів:
 ```
@@ -130,3 +135,7 @@ Some results:
 | 1Mb| 1.4 sec| 1.7 sec |
 | 10Mb | 12.7 sec| 12.7 sec|
 | 100Mb| 133 sec| 140 sec |
+
+Тести додані та проходять:
+
+![Kalyna Test Are Green](KalynaTestsGreen.png)

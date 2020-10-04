@@ -358,3 +358,5 @@ MigrationBackup/
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/TestFiles/testFile1GB.txt
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyAES/AESTests/AESTests.vcxproj
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyAES/AESTests/AESTests.vcxproj.filters
+/5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyKalyna/KalynaTests/KalynaTests.vcxproj
+/5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyKalyna/KalynaTests/KalynaTests.vcxproj.filters

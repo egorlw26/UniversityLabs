@@ -3,27 +3,44 @@
 #include<fstream>
 #include<chrono>
 
-Kalyna::Kalyna(const int Nb, const int Nk, const std::vector<uint64_t>& key) :
-	Nb(Nb), Nk(Nk), Nr(NULL)
+Kalyna::Kalyna(const int iNb, const int iNk, const std::vector<uint64_t>& key)
 {
-	if (Nb == 2)
+	if (iNb == 128)
 	{
-		if (Nk == 2)
+		Nb = 2;
+		if (iNk == 128)
+		{
+			Nk = 2;
 			Nr = 10;
-		if (Nk == 4)
+		}
+		if (iNk == 256)
+		{
+			Nk = 4;
 			Nr = 14;
+		}
 	}
-	else if (Nb == 4)
+	else if (iNb == 256)
 	{
-		if (Nk == 4)
+		Nb = 4;
+		if (iNk == 256)
+		{
+			Nk = 4;
 			Nr = 14;
-		if (Nk == 8)
+		}
+		if (iNk == 512)
+		{
+			Nk = 4;
 			Nr = 18;
+		}
 	}
-	else if (Nb == 8)
+	else if (iNb == 512)
 	{
-		if (Nk == 8)
+		Nb = 8;
+		if (iNk == 512)
+		{
+			Nk = 8;
 			Nr = 18;
+		}
 	}
 
 	m_roundKeys.resize(Nr + 1);
@@ -67,7 +84,7 @@ void Kalyna::InvSubBytes(std::vector<uint64_t>& state)
 void Kalyna::ShiftRows(std::vector<uint64_t>& state)
 {
 	int shift = -1;
-	uint8_t* temp_state = new uint8_t[state.size() * (sizeof(uint64_t) / sizeof(uint8_t))];
+	uint8_t* temp_state = new uint8_t[Nb * sizeof(uint64_t)];
 	uint8_t* reint_state = reinterpret_cast<uint8_t*>(state.data());
 
 	for (int row = 0; row < sizeof(uint64_t); ++row)
@@ -83,7 +100,8 @@ void Kalyna::ShiftRows(std::vector<uint64_t>& state)
 void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
 {
 	int shift = -1;
-	auto temp_state = state;
+	uint8_t* temp_state = new uint8_t[Nb * sizeof(uint64_t)];
+	uint8_t* reint_state = reinterpret_cast<uint8_t*>(state.data());
 
 	for (int row = 0; row < sizeof(uint64_t); ++row)
 	{
@@ -92,7 +110,7 @@ void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
 		for (int col = 0; col < Nb; ++col)
 			temp_state[row + sizeof(uint64_t) * col] = state[row + sizeof(uint64_t) * ((col + shift) % Nb)];
 	}
-	state = temp_state;
+	reint_state = temp_state;
 }
 
 uint8_t Kalyna::MultGF(uint8_t f, uint8_t s)
