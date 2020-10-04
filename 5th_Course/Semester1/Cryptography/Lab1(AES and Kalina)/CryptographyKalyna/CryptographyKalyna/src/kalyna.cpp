@@ -332,9 +332,6 @@ void Kalyna::KalynaKeyExpand(std::vector<uint64_t>& state)
 	KeyExpandKt(state, kt);
 	KeyExpandEven(state, kt);
 	KeyExpandOdd();
-	/*for (auto& val : m_roundKeys)
-		for(auto& i : val)
-		std::cout <<std::hex << i;*/
 }
 
 std::vector<uint64_t> Kalyna::KalynaEncipher(std::vector<uint64_t>& msg)
