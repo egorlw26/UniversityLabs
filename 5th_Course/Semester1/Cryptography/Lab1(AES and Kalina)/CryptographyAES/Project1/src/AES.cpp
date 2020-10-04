@@ -1,5 +1,6 @@
 #include "AES.h"
 #include <fstream>
+#include <chrono>
 
 AES::AES(int keyLen, const std::vector<uint8_t>& key)
 {
@@ -25,9 +26,8 @@ AES::AES(int keyLen, const std::vector<uint8_t>& key)
 
 	blockBytesLen = 4 * this->Nb * sizeof(unsigned char);
 
-	std::vector<std::vector<uint8_t>> roundKeys(4, std::vector<uint8_t>(Nb * (Nr + 1)));
-	KeyExpansion(key, roundKeys);
-	m_roundKeys = roundKeys;
+	m_roundKeys = std::vector<std::vector<uint8_t>>(4, std::vector<uint8_t>(Nb * (Nr + 1)));
+	KeyExpansion(key, m_roundKeys);
 };
 
 void AES::SubBytes(std::vector<std::vector<uint8_t>>& state)
@@ -335,6 +335,8 @@ void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 
 	std::vector<uint8_t> input(blockBytesLen);
 
+	auto startTime = std::chrono::system_clock::now();
+
 	for (int i = 0; i < fileLength; i += blockBytesLen)
 	{
 		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
@@ -343,6 +345,9 @@ void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
 	}
 	
+	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
+		<< "milliseconds" << std::endl;
+
 	inputFile.close();
 	outputFile.close();
 }
@@ -363,6 +368,8 @@ void AES::Decrypt(std::string inputFilePath, std::string outputFilePath)
 
 	std::vector<uint8_t> input(blockBytesLen);
 
+	auto startTime = std::chrono::system_clock::now();
+
 	for (int i = 0; i < fileLength; i += blockBytesLen)
 	{
 		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
@@ -370,6 +377,10 @@ void AES::Decrypt(std::string inputFilePath, std::string outputFilePath)
 		auto tmp = DecryptBlock(input, m_roundKeys);
 		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
 	}
+
+	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
+		<< "milliseconds" << std::endl;
+
 	inputFile.close();
 	outputFile.close();
 }

@@ -1,7 +1,9 @@
 #include "kalyna.h"
 #include "tables.h"
+#include<fstream>
+#include<chrono>
 
-Kalyna::Kalyna(const int Nb, const int Nk) :
+Kalyna::Kalyna(const int Nb, const int Nk, const std::vector<uint64_t>& key) :
 	Nb(Nb), Nk(Nk), Nr(NULL)
 {
 	if (Nb == 2)
@@ -23,6 +25,13 @@ Kalyna::Kalyna(const int Nb, const int Nk) :
 		if (Nk == 8)
 			Nr = 18;
 	}
+
+	m_roundKeys.resize(Nr + 1);
+	for (auto& key : m_roundKeys)
+		key.resize(Nb);
+	blockBytesLen = sizeof(uint64_t) * Nb;
+	m_key = key;
+	KalynaKeyExpand(m_key);
 }
 
 void Kalyna::SubBytes(std::vector<uint64_t>& state)
@@ -55,19 +64,20 @@ void Kalyna::InvSubBytes(std::vector<uint64_t>& state)
 	}
 }
 
-
 void Kalyna::ShiftRows(std::vector<uint64_t>& state)
 {
 	int shift = -1;
-	auto temp_state = state;
+	uint8_t* temp_state = new uint8_t[state.size() * (sizeof(uint64_t) / sizeof(uint8_t))];
+	uint8_t* reint_state = reinterpret_cast<uint8_t*>(state.data());
 
 	for (int row = 0; row < sizeof(uint64_t); ++row)
 	{
 		if (row % (sizeof(uint64_t) / Nb) == 0)
 			shift += 1;
 		for (int col = 0; col < Nb; ++col)
-			temp_state[row + sizeof(uint64_t) * ((col + shift) % Nb)] = state[row + sizeof(uint64_t) * col];
+			temp_state[row + sizeof(uint64_t) * ((col + shift) % Nb)] = reint_state[row + sizeof(uint64_t) * col];
 	}
+	reint_state = temp_state;
 }
 
 void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
@@ -82,6 +92,7 @@ void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
 		for (int col = 0; col < Nb; ++col)
 			temp_state[row + sizeof(uint64_t) * col] = state[row + sizeof(uint64_t) * ((col + shift) % Nb)];
 	}
+	state = temp_state;
 }
 
 uint8_t Kalyna::MultGF(uint8_t f, uint8_t s)
@@ -106,15 +117,17 @@ std::vector<uint64_t> Kalyna::MatrixMult(const std::vector<uint64_t>& first, con
 	uint8_t product;
 	uint64_t result;
 	auto res = first;
+	auto reint_state = reinterpret_cast<const uint8_t*>(first.data());
 
 	for (int col = 0; col < Nb; ++col)
 	{
-		uint64_t result;
-		for (int row = 7; row >= 0; --row)
+		result = 0;
+		for (int row = sizeof(uint64_t) - 1; row >= 0; --row)
 		{
 			product = 0;
-			for (int b = 7; b >= 0; --b)
-				product ^= MultGF(res[b * sizeof(uint64_t) * col], second[row * sizeof(uint64_t) * b]);
+			for (int b = sizeof(uint64_t) - 1; b >= 0; --b)
+				product ^= MultGF(reint_state[b + sizeof(uint64_t) * col], second[row + sizeof(uint64_t) * b]);
+			result |= (uint64_t)product << (row * sizeof(uint64_t));
 		}
 		res[col] = result;
 	}
@@ -131,16 +144,16 @@ void Kalyna::InvMixColumns(std::vector<uint64_t>& state)
 	MatrixMult(state, mds_inv_matrix);
 }
 
-void Kalyna::AddRoundKey(std::vector<uint64_t>& state, const std::vector<std::vector<uint64_t>>& roundKeys, const int round)
+void Kalyna::AddRoundKey(std::vector<uint64_t>& state, const int round)
 {
 	for (int i = 0; i < Nb; ++i)
-		state[i] += roundKeys[round][i];
+		state[i] += m_roundKeys[round][i];
 }
 
-void Kalyna::SubRoundKey(std::vector<uint64_t>& state, const std::vector<std::vector<uint64_t>>& roundKeys, const int round)
+void Kalyna::SubRoundKey(std::vector<uint64_t>& state, const int round)
 {
 	for (int i = 0; i < Nb; ++i)
-		state[i] -= roundKeys[round][i];
+		state[i] -= m_roundKeys[round][i];
 }
 
 void Kalyna::AddRoundKeyExpand(std::vector<uint64_t>& state, const std::vector<uint64_t>& values)
@@ -149,10 +162,10 @@ void Kalyna::AddRoundKeyExpand(std::vector<uint64_t>& state, const std::vector<u
 		state[i] += values[i];
 }
 
-void Kalyna::XorRoundKey(std::vector<uint64_t>& state, const std::vector<std::vector<uint64_t>>& roundKeys, const int round)
+void Kalyna::XorRoundKey(std::vector<uint64_t>& state, const int round)
 {
 	for (int i = 0; i < Nb; ++i) 
-		state[i] ^= roundKeys[round][i];
+		state[i] ^= m_roundKeys[round][i];
 }
 
 void Kalyna::XorRoundKeyExpand(std::vector<uint64_t>& state, const std::vector<uint64_t>& values)
@@ -203,7 +216,7 @@ void Kalyna::DecipherRound(std::vector<uint64_t>& state)
 	InvSubBytes(state);
 }
 
-void Kalyna::KeyExpandKt(std::vector<uint64_t>& state, std::vector<uint64_t>& key, std::vector<uint64_t>& kt)
+void Kalyna::KeyExpandKt(std::vector<uint64_t>& state, std::vector<uint64_t>& kt)
 {
 	std::vector<uint64_t> k0(Nb * sizeof(uint64_t));
 	std::vector<uint64_t> k1(Nb * sizeof(uint64_t));
@@ -211,12 +224,12 @@ void Kalyna::KeyExpandKt(std::vector<uint64_t>& state, std::vector<uint64_t>& ke
 	state[0] += Nb + Nk + 1;
 
 	if (Nb == Nk) {
-		memcpy(k0.data(), key.data(), Nb * sizeof(uint64_t));
-		memcpy(k1.data(), key.data(), Nb * sizeof(uint64_t));
+		memcpy(k0.data(), m_key.data(), Nb * sizeof(uint64_t));
+		memcpy(k1.data(), m_key.data(), Nb * sizeof(uint64_t));
 	}
 	else {
-		memcpy(k0.data(), key.data(), Nb * sizeof(uint64_t));
-		memcpy(k1.data(), key.data() + Nb, Nb * sizeof(uint64_t));
+		memcpy(k0.data(), m_key.data(), Nb * sizeof(uint64_t));
+		memcpy(k1.data(), m_key.data() + Nb, Nb * sizeof(uint64_t));
 	}
 
 	AddRoundKeyExpand(state, k0);
@@ -228,14 +241,14 @@ void Kalyna::KeyExpandKt(std::vector<uint64_t>& state, std::vector<uint64_t>& ke
 	memcpy(kt.data(), state.data(), Nb * sizeof(uint64_t));
 }
 
-void Kalyna::KeyExpandEven(std::vector<uint64_t>& state, std::vector<uint64_t>& key, std::vector<std::vector<uint64_t>>& round_keys, std::vector<uint64_t>& kt) {
+void Kalyna::KeyExpandEven(std::vector<uint64_t>& state, std::vector<uint64_t>& kt) {
 	int i;
 	std::vector<uint64_t> initial_data(Nk * sizeof(uint64_t));
 	std::vector<uint64_t> kt_round (Nb * sizeof(uint64_t));
 	std::vector<uint64_t> tmv(Nb * sizeof(uint64_t));
 	size_t round = 0;
 
-	memcpy(initial_data.data(), key.data(), Nk * sizeof(uint64_t));
+	memcpy(initial_data.data(), m_key.data(), Nk * sizeof(uint64_t));
 	for (i = 0; i < Nb; ++i) {
 		tmv[i] = 0x0001000100010001;
 	}
@@ -253,7 +266,7 @@ void Kalyna::KeyExpandEven(std::vector<uint64_t>& state, std::vector<uint64_t>& 
 		EncipherRound(state);
 		AddRoundKeyExpand(state, kt_round);
 
-		memcpy(round_keys[round].data(), state.data(), Nb * sizeof(uint64_t));
+		memcpy(m_roundKeys[round].data(), state.data(), Nb * sizeof(uint64_t));
 
 		if (Nr == round)
 			break;
@@ -275,7 +288,7 @@ void Kalyna::KeyExpandEven(std::vector<uint64_t>& state, std::vector<uint64_t>& 
 			EncipherRound(state);
 			AddRoundKeyExpand(state, kt_round);
 
-			memcpy(round_keys[round].data(), state.data(), Nb * sizeof(uint64_t));
+			memcpy(m_roundKeys[round].data(), state.data(), Nb * sizeof(uint64_t));
 
 			if (Nr == round)
 				break;
@@ -286,43 +299,118 @@ void Kalyna::KeyExpandEven(std::vector<uint64_t>& state, std::vector<uint64_t>& 
 	}
 }
 
-void Kalyna::KeyExpandOdd(std::vector<std::vector<uint64_t>>& round_keys)
+void Kalyna::KeyExpandOdd()
 {
 	for (int i = 1; i < Nr; i += 2) 
 	{
-		memcpy(round_keys[i].data(), round_keys[i - 1].data(), Nb * sizeof(uint64_t));
-		RotateLeft(round_keys[i]);
+		memcpy(m_roundKeys[i].data(), m_roundKeys[i - 1].data(), Nb * sizeof(uint64_t));
+		RotateLeft(m_roundKeys[i]);
 	}
 }
 
-void Kalyna::KalynaEncipher(std::vector<uint64_t>& state, std::vector<uint64_t>& msg, std::vector<std::vector<uint64_t>>& roundKeys, std::vector<uint64_t>& cipher)
+void Kalyna::KalynaKeyExpand(std::vector<uint64_t>& state)
 {
-	memcpy(state.data(), msg.data(), Nb * sizeof(uint64_t));
-
-	int round = 0;
-	AddRoundKey(state, roundKeys, round);
-	for (round = 1; round < Nr; ++round) {
-		EncipherRound(state);
-		XorRoundKey(state, roundKeys, round);
-	}
-	EncipherRound(state);
-	AddRoundKey(state, roundKeys, Nr);
-
-	memcpy(cipher.data(), state.data(), Nb * sizeof(uint64_t));
+	std::vector<uint64_t> kt(Nb * sizeof(uint64_t));
+	KeyExpandKt(state, kt);
+	KeyExpandEven(state, kt);
+	KeyExpandOdd();
+	/*for (auto& val : m_roundKeys)
+		for(auto& i : val)
+		std::cout <<std::hex << i;*/
 }
 
-void Kalyna::KalynaDecipher(std::vector<uint64_t>& state, std::vector<uint64_t>& msg, std::vector<std::vector<uint64_t>>& roundKeys, std::vector<uint64_t>& cipher)
+std::vector<uint64_t> Kalyna::KalynaEncipher(std::vector<uint64_t>& msg)
+{
+	int round = 0;
+	AddRoundKey(msg, round);
+	for (round = 1; round < Nr; ++round) {
+		EncipherRound(msg);
+		XorRoundKey(msg, round);
+	}
+	EncipherRound(msg);
+	AddRoundKey(msg, Nr);
+
+	std::vector<uint64_t> res(Nb * sizeof(uint64_t));
+	memcpy(res.data(), msg.data(), Nb * sizeof(uint64_t));
+	return res;
+}
+
+std::vector<uint64_t> Kalyna::KalynaDecipher(std::vector<uint64_t>& msg)
 {
 	int round = Nr;
-	memcpy(state.data(), cipher.data(), Nb * sizeof(uint64_t));
-
-	SubRoundKey(state, roundKeys, round);
+	SubRoundKey(msg, round);
 	for (round = Nr - 1; round > 0; --round) {
-		DecipherRound(state);
-		XorRoundKey(state, roundKeys, round);
+		DecipherRound(msg);
+		XorRoundKey(msg, round);
 	}
-	DecipherRound(state);
-	SubRoundKey(state, roundKeys, 0);
+	DecipherRound(msg);
+	SubRoundKey(msg, 0);
 
-	memcpy(msg.data(), state.data(), Nb * sizeof(uint64_t));
+	std::vector<uint64_t> res(Nb * sizeof(uint64_t));
+	memcpy(res.data(), msg.data(), Nb * sizeof(uint64_t));
+	return res;
+}
+
+void Kalyna::Encrypt(std::string inputFilePath, std::string outputFilePath)
+{
+	std::ifstream inputFile(inputFilePath, std::ios::binary);
+	if (!inputFile.is_open())
+		throw "Something went wrong while opening input file.";
+
+	std::ofstream outputFile(outputFilePath, std::ios::binary);
+	if (!outputFile.is_open())
+		throw "Something went wrong while opening output file.";
+
+	inputFile.seekg(0, inputFile.end);
+	long long fileLength = inputFile.tellg();
+	inputFile.seekg(0, inputFile.beg);
+
+	auto startTime = std::chrono::system_clock::now();
+
+	std::vector<uint64_t> input(blockBytesLen);
+
+	for (int i = 0; i < fileLength; i += blockBytesLen)
+	{
+		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
+		auto tmp = KalynaEncipher(input);
+		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+	}
+
+	std::cout << "Encrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() 
+		<< "milliseconds" << std::endl;
+
+	inputFile.close();
+	outputFile.close();
+}
+
+void Kalyna::Decrypt(std::string inputFilePath, std::string outputFilePath)
+{
+	std::ifstream inputFile(inputFilePath, std::ios::binary);
+	if (!inputFile.is_open())
+		throw "Something went wrong while opening input file.";
+
+	std::ofstream outputFile(outputFilePath, std::ios::binary);
+	if (!outputFile.is_open())
+		throw "Something went wrong while opening output file.";
+
+	inputFile.seekg(0, inputFile.end);
+	long long fileLength = inputFile.tellg();
+	inputFile.seekg(0, inputFile.beg);
+
+	std::vector<uint64_t> input(blockBytesLen);
+
+	auto startTime = std::chrono::system_clock::now();
+
+	for (int i = 0; i < fileLength; i += blockBytesLen)
+	{
+		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
+		auto tmp = KalynaDecipher(input);
+		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+	}
+
+	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
+		<< "milliseconds" << std::endl;
+
+	inputFile.close();
+	outputFile.close();
 }

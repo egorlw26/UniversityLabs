@@ -29,13 +29,8 @@ int main()
 	generate();
 
 	AES aes(128, key);
-	auto start = std::chrono::system_clock::now();
 	aes.Encrypt("../../TestFiles/testFile10Mb.txt", "../../Results/encrypted10Mb.txt");
-	std::cout << "Encrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
-	
-	start = std::chrono::system_clock::now();
 	aes.Decrypt("../../Results/encrypted10Mb.txt", "../../Results/decrypted10Mb.txt");
-	std::cout << "Decrypted at: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() << std::endl;
 
 	return 0;
 }
