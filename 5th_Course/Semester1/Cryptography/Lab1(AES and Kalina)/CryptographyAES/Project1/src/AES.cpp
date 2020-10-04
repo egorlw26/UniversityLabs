@@ -47,7 +47,7 @@ void AES::ShiftRows(std::vector<std::vector<uint8_t>>& state)
 	ShiftRow(state[3], 3);
 }
 
-void AES::ShiftRow(std::vector<uint8_t>& row, const int& step)
+void AES::ShiftRow(std::vector<uint8_t>& row, const int step)
 {
 	auto row_copy = row;
 	for (int i = 0; i < Nb; ++i)
@@ -56,24 +56,18 @@ void AES::ShiftRow(std::vector<uint8_t>& row, const int& step)
 
 void AES::MixColumns(std::vector<std::vector<uint8_t>>& state)
 {
-	std::vector<uint8_t> temp_column(4);
 	for (int i = 0; i < 4; ++i)
 	{
-		for (int j = 0; j < 4; ++j)
-			temp_column[j] = state[j][i];
-		MixColumn(temp_column);
-		for (int j = 0; j < 4; ++j)
-			state[j][i] = temp_column[j];
-	}
-}
+		uint8_t a0 = state[0][i];
+		uint8_t a1 = state[1][i];
+		uint8_t a2 = state[2][i];
+		uint8_t a3 = state[3][i];
 
-void AES::MixColumn(std::vector<uint8_t>& column)
-{
-	std::vector<uint8_t> a = column;
-	column[0] = xTime(a[0]) ^ MultBy(a[1], 0x03) ^ a[2] ^ a[3];
-	column[1] = a[0] ^ xTime(a[1]) ^ MultBy(a[2], 0x03) ^ a[3];
-	column[2] = a[0] ^ a[1] ^ xTime(a[2]) ^ MultBy(a[3], 0x03);
-	column[3] = MultBy(a[0], 0x03) ^ a[1] ^ a[2] ^ xTime(a[3]);
+		state[0][i] = xTime(a0) ^ MultBy(a1, 0x03) ^ a2 ^ a3;
+		state[1][i] = a0 ^ xTime(a1) ^ MultBy(a2, 0x03) ^ a3;
+		state[2][i] = a0 ^ a1 ^ xTime(a2) ^ MultBy(a3, 0x03);
+		state[3][i] = MultBy(a0, 0x03) ^ a1 ^ a2 ^ xTime(a3);
+	}
 }
 
 void AES::InvSubBytes(std::vector<std::vector<uint8_t>>& state)
@@ -93,7 +87,7 @@ void AES::InvShiftRows(std::vector<std::vector<uint8_t>>& state)
 	InvShiftRow(state[3], 3);
 }
 
-void AES::InvShiftRow(std::vector<uint8_t>& row, const int& step)
+void AES::InvShiftRow(std::vector<uint8_t>& row, const int step)
 {
 	auto row_copy = row;
 	for (int i = 0; i < 4; ++i)
@@ -104,28 +98,22 @@ void AES::InvShiftRow(std::vector<uint8_t>& row, const int& step)
 
 void AES::InvMixColumns(std::vector<std::vector<uint8_t>>& state)
 {
-	std::vector<uint8_t> temp_column(4);
 	for (int i = 0; i < 4; ++i)
 	{
-		for (int j = 0; j < 4; ++j)
-			temp_column[j] = state[j][i];
-		InvMixColumn(temp_column);
-		for (int j = 0; j < 4; ++j)
-			state[j][i] = temp_column[j];
-	}
-}
+		uint8_t a0 = state[0][i];
+		uint8_t a1 = state[1][i];
+		uint8_t a2 = state[2][i];
+		uint8_t a3 = state[3][i];
 
-void AES::InvMixColumn(std::vector<uint8_t>& column)
-{
-	auto a = column;
-	column[0] = MultBy(a[0], 0x0e) ^ MultBy(a[1], 0x0b) ^
-		MultBy(a[2], 0x0d) ^ MultBy(a[3], 0x09);
-	column[1] = MultBy(a[0], 0x09) ^ MultBy(a[1], 0x0e) ^
-		MultBy(a[2], 0x0b) ^ MultBy(a[3], 0x0d);
-	column[2] = MultBy(a[0], 0x0d) ^ MultBy(a[1], 0x09) ^
-		MultBy(a[2], 0x0e) ^ MultBy(a[3], 0x0b);
-	column[3] = MultBy(a[0], 0x0b) ^ MultBy(a[1], 0x0d) ^
-		MultBy(a[2], 0x09) ^ MultBy(a[3], 0x0e);
+		state[0][i] = MultBy(a0, 0x0e) ^ MultBy(a1, 0x0b) ^
+			MultBy(a2, 0x0d) ^ MultBy(a3, 0x09);
+		state[1][i] = MultBy(a0, 0x09) ^ MultBy(a1, 0x0e) ^
+			MultBy(a2, 0x0b) ^ MultBy(a3, 0x0d);
+		state[2][i] = MultBy(a0, 0x0d) ^ MultBy(a1, 0x09) ^
+			MultBy(a2, 0x0e) ^ MultBy(a3, 0x0b);
+		state[3][i] = MultBy(a0, 0x0b) ^ MultBy(a1, 0x0d) ^
+			MultBy(a2, 0x09) ^ MultBy(a3, 0x0e);
+	}
 }
 
 void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<uint8_t>>& w)
@@ -152,12 +140,10 @@ void AES::KeyExpansion(const std::vector<uint8_t>& key, std::vector<std::vector<
 		{
 			LeftShiftColumn(nColumn);
 			SubColumn(nColumn);
-			nColumn = XorColumns(Wi_m_Nk, nColumn, GetRConColumn(i / Nk - 1));
+			XorColumns(nColumn, Wi_m_Nk, GetRConColumn(i / Nk - 1));
 		}
 		else
-		{
-			nColumn = XorColumns(nColumn, Wi_m_Nk, { 0x00, 0x00, 0x00, 0x00 });
-		}
+			XorColumns(nColumn, Wi_m_Nk, { 0x00, 0x00, 0x00, 0x00 });
 
 		w[0][i] = nColumn[0];
 		w[1][i] = nColumn[1];
@@ -173,15 +159,11 @@ void AES::AddRoundKey(std::vector<std::vector<uint8_t>>& state, const int round)
 			state[i][j] ^= m_roundKeys[j][round * Nb + i];
 }
 
-std::vector<uint8_t> AES::XorColumns(const std::vector<uint8_t>& first,
+void AES::XorColumns(std::vector<uint8_t>& first,
 	const std::vector<uint8_t>& second, const std::vector<uint8_t>& third)
 {
-	std::vector<uint8_t> res(4);
-	res[0] = first[0] ^ second[0] ^ third[0];
-	res[1] = first[1] ^ second[1] ^ third[1];
-	res[2] = first[2] ^ second[2] ^ third[2];
-	res[3] = first[3] ^ second[3] ^ third[3];
-	return res;
+	for(int i = 0; i < 4; ++i)
+		first[i] = first[i] ^ second[i] ^ third[i];
 }
 
 void AES::LeftShiftColumn(std::vector<uint8_t>& column)
@@ -199,7 +181,7 @@ void AES::SubColumn(std::vector<uint8_t>& column)
 		column[i] = sBox[column[i]];
 }
 
-std::vector<uint8_t> AES::GetRConColumn(const int& index)
+std::vector<uint8_t> AES::GetRConColumn(const int index)
 {
 	std::vector<uint8_t> res(4);
 	for (int i = 0; i < 4; ++i)
@@ -212,43 +194,37 @@ std::vector<uint8_t> AES::GetRConColumn(const int& index)
 /// </summary>
 /// <param name="value"></param>
 /// <returns></returns>
-uint8_t AES::xTime(const uint8_t& value)
+uint8_t AES::xTime(const uint8_t value)
 {
 	return (value << 1) ^ (((value >> 7) & 1) * 0x1b);
 }
 
-uint8_t AES::MultBy(const uint8_t& input, const uint8_t& value)
+uint8_t AES::MultBy(const uint8_t input, uint8_t value)
 {
-	uint8_t mult = value;
-	std::vector<uint8_t> forXor;
+	uint8_t res = 0x00;
 	while (true)
 	{
-		uint8_t s = uint8_t(0x01);
+		uint8_t s = 0x01;
 		int iter = 0;
-		while (uint8_t((s << 1)) <= uint8_t(mult))
+		while ((s << 1) <= value)
 		{
 			++iter;
 			s = s << 1;
 		}
-
-		uint8_t xorValue = uint8_t(input);
+		uint8_t xorValue = input;
 		for (int i = 0; i < iter; ++i)
 			xorValue = xTime(xorValue);
-		forXor.push_back(xorValue);
+		res ^= xorValue;
 
-		uint8_t diff = mult - s;
+		uint8_t diff = value - s;
 		if (diff == 0x01 || diff == 0x00)
 		{
-			forXor.push_back(diff * input);
+			res ^= (diff * input);
 			break;
 		}
 
-		mult = diff;
+		value = diff;
 	}
-
-	uint8_t res = 0x00;
-	for (uint8_t& val : forXor)
-		res ^= val;
 	return res;
 }
 
@@ -259,64 +235,38 @@ void AES::PushPaddingZeros(std::vector<uint8_t>& msg)
 		msg.push_back(0x30);
 }
 
-std::vector<uint8_t> AES::EncryptBlock(const std::vector<uint8_t>& input,
-	const std::vector<std::vector<uint8_t>>& roundKeys)
+void AES::EncryptBlock(std::vector<std::vector<uint8_t>>& input)
 {
-	std::vector<std::vector<uint8_t>> state(4, std::vector<uint8_t>(Nb));
-	for (int i = 0; i < 4; ++i)
-		for (int j = 0; j < Nb; ++j)
-			state[i][j] = input[i + 4 * j];
-
-	AddRoundKey(state, 0);
+	AddRoundKey(input, 0);
 
 	for (int round = 1; round < Nr; ++round)
 	{
-		SubBytes(state);
-		ShiftRows(state);
-		MixColumns(state);
-		AddRoundKey(state, round);
+		SubBytes(input);
+		ShiftRows(input);
+		MixColumns(input);
+		AddRoundKey(input, round);
 	}
 
-	SubBytes(state);
-	ShiftRows(state);
-	AddRoundKey(state, Nr);
-
-	std::vector<uint8_t> res(4 * Nb);
-	for (int i = 0; i < 4; ++i)
-		for (int j = 0; j < Nb; ++j)
-			res[i + j * 4] = state[i][j];
-
-	return res;
+	SubBytes(input);
+	ShiftRows(input);
+	AddRoundKey(input, Nr);
 }
 
-std::vector<uint8_t> AES::DecryptBlock(const std::vector<uint8_t>& input,
-	const std::vector<std::vector<uint8_t>>& roundKeys)
+void AES::DecryptBlock(std::vector<std::vector<uint8_t>>& input)
 {
-	std::vector<std::vector<uint8_t>> state(4, std::vector<uint8_t>(Nb));
-	for (int i = 0; i < 4; ++i)
-		for (int j = 0; j < Nb; ++j)
-			state[i][j] = input[i + 4 * j];
-
-	AddRoundKey(state, Nr);
+	AddRoundKey(input, Nr);
 
 	for (int round = Nr - 1; round > 0; --round)
 	{
-		InvShiftRows(state);
-		InvSubBytes(state);
-		AddRoundKey(state, round);
-		InvMixColumns(state);
+		InvShiftRows(input);
+		InvSubBytes(input);
+		AddRoundKey(input, round);
+		InvMixColumns(input);
 	}
 
-	InvShiftRows(state);
-	InvSubBytes(state);
-	AddRoundKey(state, 0);
-
-	std::vector<uint8_t> res(4 * Nb);
-	for (int i = 0; i < 4; ++i)
-		for (int j = 0; j < Nb; ++j)
-			res[i + j * 4] = state[i][j];
-
-	return res;
+	InvShiftRows(input);
+	InvSubBytes(input);
+	AddRoundKey(input, 0);
 }
 
 void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
@@ -333,20 +283,23 @@ void AES::Encrypt(std::string inputFilePath, std::string outputFilePath)
 	long long fileLength = inputFile.tellg();
 	inputFile.seekg(0, inputFile.beg);
 
-	std::vector<uint8_t> input(blockBytesLen);
+	std::vector<std::vector<uint8_t>> input(4, std::vector<uint8_t>(Nb));
 
 	auto startTime = std::chrono::system_clock::now();
 
 	for (int i = 0; i < fileLength; i += blockBytesLen)
 	{
-		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
+		for(int j = 0; j < Nb; ++j)
+			inputFile.read(reinterpret_cast<char*>(input[j].data()), 4);
 
-		auto tmp = EncryptBlock(input, m_roundKeys);
-		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+		EncryptBlock(input);
+
+		for(int j = 0; j < Nb; ++j)
+			outputFile.write(reinterpret_cast<char*>(input[j].data()), input[j].size());
 	}
-	
-	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
-		<< "milliseconds" << std::endl;
+
+	std::cout << "Encrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
+		<< " milliseconds" << std::endl;
 
 	inputFile.close();
 	outputFile.close();
@@ -366,20 +319,22 @@ void AES::Decrypt(std::string inputFilePath, std::string outputFilePath)
 	long long fileLength = inputFile.tellg();
 	inputFile.seekg(0, inputFile.beg);
 
-	std::vector<uint8_t> input(blockBytesLen);
+	std::vector<std::vector<uint8_t>> input(4, std::vector<uint8_t>(4));
 
 	auto startTime = std::chrono::system_clock::now();
 
 	for (int i = 0; i < fileLength; i += blockBytesLen)
 	{
-		inputFile.read(reinterpret_cast<char*>(input.data()), blockBytesLen);
+		for(int j = 0; j < Nb; ++j)
+			inputFile.read(reinterpret_cast<char*>(input[j].data()), 4);
+		DecryptBlock(input);
 
-		auto tmp = DecryptBlock(input, m_roundKeys);
-		outputFile.write(reinterpret_cast<char*>(tmp.data()), tmp.size());
+		for(int j = 0; j < Nb; ++j)
+			outputFile.write(reinterpret_cast<char*>(input[j].data()), input[j].size());
 	}
 
 	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
-		<< "milliseconds" << std::endl;
+		<< " milliseconds" << std::endl;
 
 	inputFile.close();
 	outputFile.close();

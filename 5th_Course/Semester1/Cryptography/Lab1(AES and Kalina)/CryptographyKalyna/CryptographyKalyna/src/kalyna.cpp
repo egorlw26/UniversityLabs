@@ -377,7 +377,7 @@ void Kalyna::Encrypt(std::string inputFilePath, std::string outputFilePath)
 	}
 
 	std::cout << "Encrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count() 
-		<< "milliseconds" << std::endl;
+		<< " milliseconds" << std::endl;
 
 	inputFile.close();
 	outputFile.close();
@@ -409,7 +409,7 @@ void Kalyna::Decrypt(std::string inputFilePath, std::string outputFilePath)
 	}
 
 	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
-		<< "milliseconds" << std::endl;
+		<< " milliseconds" << std::endl;
 
 	inputFile.close();
 	outputFile.close();

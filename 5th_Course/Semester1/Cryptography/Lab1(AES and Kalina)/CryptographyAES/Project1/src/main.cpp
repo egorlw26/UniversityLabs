@@ -26,11 +26,9 @@ int main()
 		0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 	};
 
-	generate();
-
 	AES aes(128, key);
-	aes.Encrypt("../../TestFiles/testFile10Mb.txt", "../../Results/encrypted10Mb.txt");
-	aes.Decrypt("../../Results/encrypted10Mb.txt", "../../Results/decrypted10Mb.txt");
+	aes.Encrypt("../../TestFiles/testFile100Mb.txt", "../../Results/encrypted100Mb.txt");
+	aes.Decrypt("../../Results/encrypted100Mb.txt", "../../Results/decrypted100Mb.txt");
 
 	return 0;
 }
