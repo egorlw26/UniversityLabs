@@ -95,6 +95,7 @@ void Kalyna::ShiftRows(std::vector<uint64_t>& state)
 			temp_state[row + sizeof(uint64_t) * ((col + shift) % Nb)] = reint_state[row + sizeof(uint64_t) * col];
 	}
 	reint_state = temp_state;
+	delete[] temp_state;
 }
 
 void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
@@ -111,6 +112,7 @@ void Kalyna::InvShiftRows(std::vector<uint64_t>& state)
 			temp_state[row + sizeof(uint64_t) * col] = state[row + sizeof(uint64_t) * ((col + shift) % Nb)];
 	}
 	reint_state = temp_state;
+	delete[] temp_state;
 }
 
 uint8_t Kalyna::MultGF(uint8_t f, uint8_t s)
