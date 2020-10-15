@@ -10,8 +10,8 @@ funcExample3 = "3+4*2/(1-5)"
 funcExample4 = "sin(pow(2, 3)/3*PI)"
 
 if __name__ == "__main__":
-    parser = FuncParser(funcExample1)
-    Xs = np.arange(-2, 2, 0.001)
+    parser = ShuntingYardParser(funcExample1)
+    Xs = np.arange(-2, 2, 0.01)
     Ys = [parser.getValue({'x': x}) for x in Xs]
 
     plt.plot(Xs, Ys)

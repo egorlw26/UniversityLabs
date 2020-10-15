@@ -55,7 +55,7 @@ class ShuntingYardParser:
         self.parseInputStack()
         ans = self.calculateOutputStack()
         self.currentIndex = 0
-        return ans
+        return ans[0]
 
     def calculateOutputStack(self):
         args = []
@@ -137,8 +137,6 @@ class ShuntingYardParser:
                     self.outputStack.append(self.operatorStack.pop())
         while len(self.operatorStack) != 0:
             self.outputStack.append(self.operatorStack.pop())
-        
-        print(self.outputStack)
 
     def parseNumber(self):
         self.skipWhiteSpaces()
