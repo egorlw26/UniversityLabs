@@ -360,3 +360,22 @@ MigrationBackup/
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyAES/AESTests/AESTests.vcxproj.filters
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyKalyna/KalynaTests/KalynaTests.vcxproj
 /5th_Course/Semester1/Cryptography/Lab1(AES and Kalina)/CryptographyKalyna/KalynaTests/KalynaTests.vcxproj.filters
+/5th_Course/Semester1/Cryptography/Lab2/RC4/RC4/RC4.vcxproj.filters
+/5th_Course/Semester1/Cryptography/Results/kalynaFileSmallEncrypted.txt
+/5th_Course/Semester1/Cryptography/Lab2/RC4/RC4.sln
+/5th_Course/Semester1/Cryptography/Lab2/RC4/RC4/RC4.vcxproj
+/5th_Course/Semester1/Cryptography/Results/decrypted1Mb.txt
+/5th_Course/Semester1/Cryptography/Results/decryptedSmall.txt
+/5th_Course/Semester1/Cryptography/Results/encrypted1Mb.txt
+/5th_Course/Semester1/Cryptography/Results/encryptedSmall.txt
+/5th_Course/Semester1/Cryptography/Results/kalynaFileSmallDecrypted.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Decrypted100Mb.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Decrypted10Mb.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Decrypted1Gb.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Encrypted100Mb.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Encrypted10Mb.txt
+/5th_Course/Semester1/Cryptography/Results/rc4Encrypted1Gb.txt
+/5th_Course/Semester1/Cryptography/TestFiles/testFile100MB.txt
+/5th_Course/Semester1/Cryptography/TestFiles/testFile10Mb.txt
+/5th_Course/Semester1/Cryptography/TestFiles/testFile1GB.txt
+/5th_Course/Semester1/Cryptography/TestFiles/testFile1Mb.txt
