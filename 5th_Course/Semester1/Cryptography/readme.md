@@ -1,4 +1,4 @@
-# Звіт до лабораторної роботи №1 (Aes, Kalyna)
+# Lab №1 (Aes, Kalyna)
 
 - Обрана мова - C++
 - IDE - Visual Studio 2019
@@ -24,7 +24,7 @@ aes.Decrypt("../../Results/encrypted1Gb.txt", "../../Results/decrypted1Gb.txt");
 Для зберігання та обробки данних усюди використано ```uint8_t``` типа даних, щоб зберігати рівно один байт даних. Для оптимізації можливо було б використати ```uint64_t```, однак наразі не бачу сенсу витрачати час на такі оптимізації.
 
 Список реалізованих для AES методів нижче:
-```
+```sh
 private:
     uint8_t xTime(const uint8_t value);
     uint8_t MultBy(const uint8_t input, uint8_t value);
@@ -78,7 +78,7 @@ public:
 Дана реалізація також підтримує можливі комбінації параметрів довжини ключа, довжини блока та раундів генерування ключа.
 
 Принцип використання підігнаний під користування попереднім методом:
-```
+```sh
 std::vector<uint64_t> key =
 	{
 		0x0001020304050607, 0x08090A0B0C0D0E0F
@@ -91,7 +91,7 @@ kalyna.Decrypt("../../Results/kalynaFile10MbEncrypted.txt", "../../Results/kalyn
 
 
 Список реалізованих методів:
-```
+```sh
 private:
 	void SubBytes(std::vector<uint64_t>& state);
 	void ShiftRows(std::vector<uint64_t>& state);
@@ -139,3 +139,25 @@ Some results:
 Тести додані та проходять:
 
 ![Kalyna Test Are Green](KalynaTestsGreen.png)
+
+# Lab №2 (RC4 and Salsa20 only)
+
+Загальна таблиця результатів після реалізації нових методів:
+
+|Algo| Size | Time Encryption | Time Decryption |
+|----|------|------|------|
+|Aes-128 | 1 Mb| 0.2 sec| 0.4 sec |
+|Aes-128 | 10 Mb | 2.4 sec| 4.6 sec|
+|Aes-128 | 100 Mb| 21.6 sec| 46.5 sec |
+|Aes-128 | 1 Gb| 210 sec| 415 sec |
+|Kalyna| 1 Mb| 1.4 sec| 1.7 sec |
+|Kalyna| 10 Mb | 12.7 sec| 12.7 sec|
+|Kalyna| 100 Mb| 133 sec| 140 sec |
+|RC4| 1 Mb| 28 ms| 20 ms|
+|RC4| 10 Mb| 142 ms| 91 ms|
+|RC4| 100 Mb| 740 ms| 668 ms|
+|RC4| 1 Gb| 7.6 sec| 7.4 sec|
+|Salsa20| 1 Mb| 11 ms| 15 ms|
+|Salsa20| 10 Mb| 126 sec| 93 ms|
+|Salsa20| 100 Mb| 796 ms| 691 ms|
+|Salsa20| 1 Gb| 7.4 sec| 7.8 sec|

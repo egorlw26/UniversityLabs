@@ -3,7 +3,7 @@
 
 int main()
 {
-	auto key = "qwertyuioplkjhfm";
+	auto key = "aaaaaaaaaaaaaaaa";
 	auto salsa20 = Salsa20(key);
 
 	salsa20.Encrypt("../../../TestFiles/testFile10Mb.txt", "../../../Results/salsa20Encrypted10Mb.txt");
