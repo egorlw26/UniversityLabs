@@ -45,12 +45,7 @@ std::string RC4::prga(const std::string input)
 	return res;
 }
 
-std::string RC4::EncryptMessage(const std::string input)
-{
-	return prga(input);
-}
-
-std::string RC4::DecryptMessage(const std::string input)
+std::string RC4::CryptMessage(const std::string input)
 {
 	return prga(input);
 }
@@ -78,7 +73,7 @@ void RC4::Encrypt(std::string inputFilePath, std::string outputFilePath)
 	for (int i = 0; i < fileLength; i += maxSize)
 	{
 		inputFile.read(message.data(), maxSize);
-		auto encrypted = EncryptMessage(message);
+		auto encrypted = CryptMessage(message);
 		outputFile.write(encrypted.data(), maxSize);
 	}
 
@@ -112,11 +107,11 @@ void RC4::Decrypt(std::string inputFilePath, std::string outputFilePath)
 	for (int i = 0; i < fileLength; i += maxSize)
 	{
 		inputFile.read(message.data(), maxSize);
-		auto decrypted = DecryptMessage(message);
+		auto decrypted = CryptMessage(message);
 		outputFile.write(decrypted.data(), maxSize);
 	}
 
-	std::cout << "Encrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
+	std::cout << "Decrypted at " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count()
 		<< " milliseconds" << std::endl;
 
 	inputFile.close();

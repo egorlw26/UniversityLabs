@@ -379,3 +379,8 @@ MigrationBackup/
 /5th_Course/Semester1/Cryptography/TestFiles/testFile10Mb.txt
 /5th_Course/Semester1/Cryptography/TestFiles/testFile1GB.txt
 /5th_Course/Semester1/Cryptography/TestFiles/testFile1Mb.txt
+/5th_Course/Semester1/Cryptography/Results/salsa20Decrypted10Mb.txt
+/5th_Course/Semester1/Cryptography/Results/salsa20Encrypted10Mb.txt
+/5th_Course/Semester1/Cryptography/Lab2/Salsa20/Salsa20/Salsa20.vcxproj
+/5th_Course/Semester1/Cryptography/Lab2/Salsa20/Salsa20/Salsa20.vcxproj.filters
+/5th_Course/Semester1/Cryptography/Lab2/Salsa20/Salsa20.sln
