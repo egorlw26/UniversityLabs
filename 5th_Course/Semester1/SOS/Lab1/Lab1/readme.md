@@ -12,7 +12,7 @@
 
 # Results
 
-|Method|Time (in sec)|
+|Method|Time for 1GB data (in sec)|
 |------|-------------|
 |INET Non-blocking|<center>38.664</center>|
 |INET blocking|<center>56.098</center>|
