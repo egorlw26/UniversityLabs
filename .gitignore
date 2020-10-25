@@ -387,3 +387,14 @@ MigrationBackup/
 /5th_Course/Semester1/SOS/Lab1/Lab1/Project1/Project1.vcxproj
 /5th_Course/Semester1/SOS/Lab1/Lab1/Project1/Project1.vcxproj.filters
 /5th_Course/Semester1/SOS/Lab1/Lab1/Lab1.sln
+/5th_Course/Semester1/SOS/Lab1/Lab1/INET/inetClient.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/INET/inetServer.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/INET/my_socket
+/5th_Course/Semester1/SOS/Lab1/Lab1/INET/unixClient.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/INET/unixServer.out
+/.gitignore
+/5th_Course/Semester1/SOS/Lab1/Lab1/inetClient.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/inetServer.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/my_socket
+/5th_Course/Semester1/SOS/Lab1/Lab1/unixClient.out
+/5th_Course/Semester1/SOS/Lab1/Lab1/unixServer.out
