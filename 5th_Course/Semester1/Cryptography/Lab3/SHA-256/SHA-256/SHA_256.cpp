@@ -4,12 +4,6 @@
 #include <iostream>
 #include <iomanip>
 
-SHA_256::SHA_256()
-{
-	m_W = std::vector<unsigned int>(64);
-}
-
-
 unsigned int SHA_256::ROTR(const unsigned int& n, const unsigned int& x)
 {
 	return (x >> n) | (x << (32 - n));
@@ -50,23 +44,10 @@ unsigned int SHA_256::sSigma1(const unsigned int& x)
 	return ROTR(17, x) ^ ROTR(19, x) ^ SHR(10, x);
 }
 
-void SHA_256::initHash()
-{
-	m_H.push_back({ 0x6a09e667,
-					0xbb67ae85,
-					0x3c6ef372,
-					0xa54ff53a,
-					0x510e527f,
-					0x9b05688c,
-					0x1f83d9ab,
-					0x5be0cd19 });
-}
-
 int SHA_256::calcPadding()
 {
 	int k = 0;
-	int length = m_bytes.size() * 8;
-	while ((length + 1 + k) % 512 != 448) ++k;
+	while ((m_message_length_in_bits + 1 + k) % 512 != 448) ++k;
 	return k;
 }
 
@@ -74,73 +55,85 @@ void SHA_256::stringToBytes(const std::string& msg)
 {
 	auto start = reinterpret_cast<const unsigned char*>(msg.c_str());
 	m_bytes.assign(start, start + msg.length());
+	m_message_length_in_bits = msg.length() * 8;
 }
 
-void SHA_256::paddingBytes()
+void SHA_256::padding()
 {
-	auto padding = calcPadding();
-	auto length = m_bytes.size()*8;
+	int padding = calcPadding();
 
+	// pushing symbol after end of input message
 	m_bytes.push_back(0x80);
 	padding -= 7;
 
 	for (int i = 0; i < (padding / 8); ++i)
-	{
 		m_bytes.push_back(0);
-	}
 
 	for (int i = 1; i < 9; ++i)
-	{
-		m_bytes.push_back(length >> (64 - i * 8));
-	}
+		m_bytes.push_back(m_message_length_in_bits >> (64 - i * 8));
 }
 
-void SHA_256::parseBytes()
+void SHA_256::parse()
 {
 	unsigned int iter = 0;
 	for (; iter < m_bytes.size() / 64; ++iter)
 	{
+		// chunk of 512-bits
 		std::vector<unsigned int> block(16);
 		for (int j = 0; j < 16; ++j)
 		{
-			unsigned int wordInBlock = 0;
+			unsigned int word = 0;
 			for (int k = 0; k < 4; ++k)
 			{
-				wordInBlock <<= 8;
-				wordInBlock |= m_bytes[j * 4 + k];
+				word <<= 8;
+				word |= m_bytes[iter*64 + j * 4 + k];
 			}
-			block[j] = wordInBlock;
+			block[j] = word;
 		}
-		m_M.push_back(block);
+		m_blocks.push_back(block);
 	}
 	m_numberOfBlocks = iter;
 }
 
 void SHA_256::computeHash()
 {
-	std::vector<unsigned int> hashBlock(8);
-	for (int i = 1; i <= m_numberOfBlocks; ++i)
+	// Initialize hash values (8 numbers)
+	m_hash = 
+	{ 
+		0x6a09e667,
+		0xbb67ae85,
+		0x3c6ef372,
+		0xa54ff53a,
+		0x510e527f,
+		0x9b05688c,
+		0x1f83d9ab,
+		0x5be0cd19
+	};
+	// schedule array of 32-bits words
+	auto w = std::vector<unsigned int>(64, 0);
+	// variables for round
+	unsigned int a, b, c, d, e, f, g, h;
+	// temp variables
+	unsigned int temp1, temp2;
+	for (int i = 0; i < m_numberOfBlocks; ++i)
 	{
 		for (int t = 0; t < 16; ++t)
-			m_W[t] = m_M[i - 1][t];
-		for (int t = 16; t <= 63; ++t)
-			m_W[t] = sSigma1(m_W[t - 2]) + m_W[t - 7] + sSigma0(m_W[t - 15]) + m_W[t - 16];
+			w[t] = m_blocks[i][t];
+		for (int t = 16; t < 64; ++t)
+			w[t] = sSigma1(w[t - 2]) + w[t - 7] + sSigma0(w[t - 15]) + w[t - 16];
 
-		unsigned int a, b, c, d, e, f, g, h;
-		a = m_H[i - 1][0];
-		b = m_H[i - 1][1];
-		c = m_H[i - 1][2];
-		d = m_H[i - 1][3];
-		e = m_H[i - 1][4];
-		f = m_H[i - 1][5];
-		g = m_H[i - 1][6];
-		h = m_H[i - 1][7];
+		a = m_hash[0];
+		b = m_hash[1];
+		c = m_hash[2];
+		d = m_hash[3];
+		e = m_hash[4];
+		f = m_hash[5];
+		g = m_hash[6];
+		h = m_hash[7];
 
-		unsigned int temp1, temp2;
-
-		for (int t = 0; t <= 63; ++t)
+		for (int t = 0; t < 64; ++t)
 		{
-			temp1 = h + lSigma1(e) + Ch(e, f, g) + K[t] + m_W[t];
+			temp1 = h + lSigma1(e) + Ch(e, f, g) + K[t] + w[t];
 			temp2 = lSigma0(a) + Maj(a, b, c);
 
 			h = g;
@@ -153,23 +146,21 @@ void SHA_256::computeHash()
 			a = temp1 + temp2;
 		}
 
-		hashBlock[0] = a + m_H[i - 1][0];
-		hashBlock[1] = b + m_H[i - 1][1];
-		hashBlock[2] = c + m_H[i - 1][2];
-		hashBlock[3] = d + m_H[i - 1][3];
-		hashBlock[4] = e + m_H[i - 1][4];
-		hashBlock[5] = f + m_H[i - 1][5];
-		hashBlock[6] = g + m_H[i - 1][6];
-		hashBlock[7] = h + m_H[i - 1][7];
-
-		m_H.push_back(hashBlock);
+		m_hash[0] += a;
+		m_hash[1] += b;
+		m_hash[2] += c;
+		m_hash[3] += d;
+		m_hash[4] += e;
+		m_hash[5] += f;
+		m_hash[6] += g;
+		m_hash[7] += h;
 	}
 }
 
 void SHA_256::showResultHash()
 {
 	for (int i = 0; i < 8; ++i)
-		std::cout << std::hex << std::setw(8) << std::setfill('0') << m_H[m_numberOfBlocks][i];
+		std::cout << std::hex << std::setw(8) << std::setfill('0') << m_hash[i];
 	std::cout << std::endl;
 
 	clearState();
@@ -177,16 +168,14 @@ void SHA_256::showResultHash()
 
 void SHA_256::clearState()
 {
-	m_M.clear();
-	m_H.clear();
+	m_blocks.clear();
 	m_bytes.clear();
 }
 
 void SHA_256::createHash(const std::string& i_msg)
 {
 	stringToBytes(i_msg);
-	paddingBytes();
-	parseBytes();
-	initHash();
+	padding();
+	parse();
 	computeHash();
 }

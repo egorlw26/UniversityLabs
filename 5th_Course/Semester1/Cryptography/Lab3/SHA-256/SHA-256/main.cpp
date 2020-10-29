@@ -3,7 +3,8 @@
 
 int main()
 {
-	//abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq
+	// abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq
+
 	std::string msgToHash = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
 
 	SHA_256 sha = SHA_256();
