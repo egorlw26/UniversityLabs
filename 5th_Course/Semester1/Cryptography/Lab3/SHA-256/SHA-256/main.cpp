@@ -7,8 +7,7 @@ int main()
 
 	std::string msgToHash = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
 
-	SHA_256 sha = SHA_256();
-	sha.createHash(msgToHash);
+	SHA_256 sha = SHA_256(msgToHash);
 	
 	sha.showResultHash();
 

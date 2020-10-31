@@ -179,3 +179,8 @@ void SHA_256::createHash(const std::string& i_msg)
 	parse();
 	computeHash();
 }
+
+SHA_256::SHA_256(const std::string& msg)
+{
+	createHash(msg);
+}

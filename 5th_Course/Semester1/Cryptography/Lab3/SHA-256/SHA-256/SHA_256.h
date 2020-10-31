@@ -36,11 +36,10 @@ private:
     int calcPadding();
 
     void computeHash();    
-
+    void createHash(const std::string& i_msg);
     void clearState();
 public:
-    void createHash(const std::string& i_msg);
     void showResultHash();
-    SHA_256() = default;
+    SHA_256(const std::string& msg);
 };
 
