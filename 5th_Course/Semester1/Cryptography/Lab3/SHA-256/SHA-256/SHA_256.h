@@ -40,6 +40,7 @@ private:
     void clearState();
 public:
     void showResultHash();
+    std::string getResultString();
     SHA_256(const std::string& msg);
 };
 

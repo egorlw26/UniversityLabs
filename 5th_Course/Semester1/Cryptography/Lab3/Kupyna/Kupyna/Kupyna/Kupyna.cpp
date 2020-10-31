@@ -260,17 +260,26 @@ void Kupyna::Digest(const std::string& msg)
 	}
 }
 
-std::string Kupyna::showResult()
+void Kupyna::Trunc()
 {
 	std::stringstream ss;
 	for (int i = 0; i < m_columns; ++i)
 		for (int j = 0; j < ROWS; ++j)
-			ss << std::setfill('0') << std::setw(2) << std::hex << (int) m_state[i][j];
+			ss << std::setfill('0') << std::setw(2) << std::hex << (int)m_state[i][j];
 
 	int hash_bytes = m_hash_bits / 8;
 	int size = hash_bytes * 2;
-	auto res =  ss.str().substr((m_nbytes - hash_bytes)*2, size);
-	std::cout << res << std::endl;
+	m_result = ss.str().substr((m_nbytes - hash_bytes) * 2, size);
+}
+
+void Kupyna::showResult()
+{
+	std::cout << m_result << std::endl;
+}
+
+std::string Kupyna::getResultString()
+{
+	return m_result;
 }
 
 void Kupyna::OutputTransform()
@@ -321,6 +330,7 @@ void Kupyna::KupynaHash(const size_t hash_bits, const std::string& input)
 	Pad(input_copy);
 	Digest(input_copy);
 	OutputTransform();
+	Trunc();
 }
 
 Kupyna::Kupyna(const size_t hash_bits, const std::string& input)

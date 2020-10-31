@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 unsigned int SHA_256::ROTR(const unsigned int& n, const unsigned int& x)
 {
@@ -159,11 +160,15 @@ void SHA_256::computeHash()
 
 void SHA_256::showResultHash()
 {
-	for (int i = 0; i < 8; ++i)
-		std::cout << std::hex << std::setw(8) << std::setfill('0') << m_hash[i];
-	std::cout << std::endl;
+	std::cout << getResultString() << std::endl;
+}
 
-	clearState();
+std::string SHA_256::getResultString()
+{
+	std::stringstream ss;
+	for (int i = 0; i < 8; ++i)
+		ss << std::hex << std::setw(8) << std::setfill('0') << m_hash[i];
+	return ss.str();
 }
 
 void SHA_256::clearState()
@@ -178,6 +183,7 @@ void SHA_256::createHash(const std::string& i_msg)
 	padding();
 	parse();
 	computeHash();
+	clearState();
 }
 
 SHA_256::SHA_256(const std::string& msg)
