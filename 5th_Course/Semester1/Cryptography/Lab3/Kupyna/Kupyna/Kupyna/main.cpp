@@ -7,7 +7,7 @@ int main()
 	Kupyna k(256, "");
 	
 
-	std::cout << k.showResult() << std::endl;
+	k.showResult();
 
 	return 0;
 }

@@ -269,7 +269,8 @@ std::string Kupyna::showResult()
 
 	int hash_bytes = m_hash_bits / 8;
 	int size = hash_bytes * 2;
-	return ss.str().substr((m_nbytes - hash_bytes)*2, size);
+	auto res =  ss.str().substr((m_nbytes - hash_bytes)*2, size);
+	std::cout << res << std::endl;
 }
 
 void Kupyna::OutputTransform()
