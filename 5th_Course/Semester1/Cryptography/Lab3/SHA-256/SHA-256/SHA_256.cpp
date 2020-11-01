@@ -168,6 +168,7 @@ std::string SHA_256::getResultString()
 	std::stringstream ss;
 	for (int i = 0; i < 8; ++i)
 		ss << std::hex << std::setw(8) << std::setfill('0') << m_hash[i];
+	clearState();
 	return ss.str();
 }
 
@@ -175,6 +176,7 @@ void SHA_256::clearState()
 {
 	m_blocks.clear();
 	m_bytes.clear();
+	m_hash.clear();
 }
 
 void SHA_256::createHash(const std::string& i_msg)
@@ -183,7 +185,6 @@ void SHA_256::createHash(const std::string& i_msg)
 	padding();
 	parse();
 	computeHash();
-	clearState();
 }
 
 SHA_256::SHA_256(const std::string& msg)

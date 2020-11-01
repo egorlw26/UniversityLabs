@@ -161,3 +161,40 @@ Some results:
 |Salsa20| 10 Mb| 126 sec| 93 ms|
 |Salsa20| 100 Mb| 796 ms| 691 ms|
 |Salsa20| 1 Gb| 7.4 sec| 7.8 sec|
+
+# Lab №3 (SHA-256, Kupyna)
+
+Не буду вдаватися в подробиці реалізації, все досить гарно описано на вікіпедії
+**[SHA-256](https://en.wikipedia.org/wiki/SHA-2)**, **[Kupyna](https://en.wikipedia.org/wiki/Kupyna)**
+
+Подивимося на результати пошуку часткової коллізії для всіх трьох методів на різних довжинах. Для більш точного результату беруться середні результати з 200 замірів
+
+
+#### SHA-256
+| Substr length | AVG Iterarions | AVG Time |
+|---------------|----------------|----------|
+|1              |4            |0.03 milliseconds|
+|2              |19            |0.12 milliseconds|
+|3              |80         |0.425 milliseconds|
+|4              |334          |1.78 milliseconds|
+|5              |1295          |6.985 milliseconds|
+|6              |4848          |27.455 milliseconds|
+|7              |19655          |102.84 milliseconds|
+
+#### Kupyna-256
+| Substr length | AVG Iterarions | AVG Time |
+|---------------|----------------|----------|
+|1              |4               |1.24 milliseconds|
+|2              |19            |4.5 milliseconds|
+|3              |74          |16.7 milliseconds|
+|4              |298          |63.7 milliseconds|
+|5              |1239          |265.8 milliseconds|
+
+#### Kupyna-512
+| Substr length | AVG Iterarions | AVG Time |
+|---------------|----------------|----------|
+|1              |5            |3.79 milliseconds|
+|2              |19           |13.385 milliseconds|
+|3              |78           |48.585 milliseconds|
+|4              |317         |187.915 milliseconds|
+|5              |1261         |739.165 milliseconds|
