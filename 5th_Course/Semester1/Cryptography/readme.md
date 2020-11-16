@@ -209,4 +209,4 @@ Some results:
 |32              |438 ms          |0 ms| 31 ms|
 |64              |3 208 ms           |0 ms| 154 ms|
 |128             |69 797 ms         |0 ms| 821 ms |
-|256              |1261         |0 ms|739.165 milliseconds|
+|256              |1261         |0 ms| unknown|
