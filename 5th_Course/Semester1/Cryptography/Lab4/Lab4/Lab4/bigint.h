@@ -83,6 +83,8 @@ public:
 
     BigInt getBIBitLength() const;
 
+    std::vector<BigInt> toBinary() const;
+
     friend BigInt operator+(const BigInt &left, const BigInt &right) {
         return left.sum(right);
     }

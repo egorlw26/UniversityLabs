@@ -1,11 +1,16 @@
 #include "RSA.h"
+#include "BigIntMod.h"
+#include <chrono>
+#include <time.h>
 #include <iostream>
 
-RSA::RSA()
+RSA::RSA(const int bitLength)
 {
-	_p = AdditionalFuncs::findRandomNearestPrime(16);
+	auto start = std::chrono::steady_clock::now();
+
+	_p = AdditionalFuncs::findRandomNearestPrime(bitLength);
 	std::cout << "Found 'p' " << _p << " as random prime\n";
-	_q = AdditionalFuncs::findRandomNearestPrime(16);
+	_q = AdditionalFuncs::findRandomNearestPrime(bitLength-1);
 	std::cout << "Found 'q' " << _q << " as random prime\n";
 	_n = _p * _q;
 	std::cout << "'n' calculated " << _n << "\n";
@@ -23,10 +28,16 @@ RSA::RSA()
 
 	_d = AdditionalFuncs::ExtendedEuclidianAlgo(_e, _totient);
 	std::cout << "'d' " << _d <<" found\n";
+
+	auto end = std::chrono::steady_clock::now();
+	auto timeTook = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Init time took: " << timeTook << " milliseconds\n";
 }
 
 BigInt RSA::Encrypt(const BigInt& input) const
 {
+	auto start = std::chrono::steady_clock::now();
+
 	if (input.getBIBitLength() > _n)
 	{
 		throw "Message too long for encrypting, abort";
@@ -34,13 +45,38 @@ BigInt RSA::Encrypt(const BigInt& input) const
 
 	std::cout << "\n\nStarting encrypting\n\n";
 	// Encryption func is c = m^e mod n, where m - our message
-	return input.powerMod(_e, _n);
+
+	auto res = input.powerMod(_e, _n);
+
+	auto end = std::chrono::steady_clock::now();
+	auto timeTook = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Encryption time took: " << timeTook << " milliseconds\n";
+
+	return res;
 }
 
 BigInt RSA::Decrypt(const BigInt& input) const
 {
+	auto start = std::chrono::steady_clock::now();
+
 	std::cout << "\n\nStarting decrypting\n\n";
 	// Decryption func is m = c^d mod n, where:
 	// c - input encrypted message, m - output decrypted message
-	return input.powerMod(_d, _n);
+
+	// Using chinese theory
+
+	BigInt dp = _d.bi_mod(_p - 1);
+	BigInt dq = _d.bi_mod(_q - 1);
+	BigInt qInv = BigIntMod(_q, _p).inverse().getNumber();
+
+	auto m1 = input.powerMod(dp, _p);
+	auto m2 = input.powerMod(dq, _q);
+	auto h = (qInv * (m1 - m2)) % _p;
+	auto m = (m2 + h * _q) % _n;
+
+	auto end = std::chrono::steady_clock::now();
+	auto timeTook = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "Decryption time took: " << timeTook << " milliseconds\n";
+
+	return m;
 }

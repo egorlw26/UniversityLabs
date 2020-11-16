@@ -12,7 +12,7 @@ private:
 	BigInt _e;
 	BigInt _d;
 public:
-	RSA();
+	RSA(const int bitLength);
 	BigInt Encrypt(const BigInt& message) const;
 	BigInt Decrypt(const BigInt& input) const;
 };

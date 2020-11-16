@@ -338,31 +338,31 @@ BigInt BigInt::bi_mod(const BigInt &other) const
 }
 
 BigInt BigInt::powerMod(const BigInt& power, const BigInt& mod) const
-{
-    // Using Chinese remainder theorem
-    // see https://en.wikipedia.org/wiki/Chinese_remainder_theorem
-
-    auto thisInPower = (*this).power(power);
-    auto modFactorized = AdditionalFuncs::Factorize(mod);
-    std::vector<BigIntMod> conditions;
-    for(auto pair : modFactorized)
-    {
-        auto prime = pair.first;
-        conditions.push_back(BigIntMod(thisInPower, prime));
-    }
-
-    BigIntSystem system = BigIntSystem(conditions);
-    return system.solve().getNumber().bi_mod(mod);
-
-    /*if (power == 0)
+{    
+    if (power == 0)
         return 1;
-
-    BigInt res = (*this).bi_mod(mod);
-    for (BigInt i = 1; i < power; i = i + 1)
+    if (power % 2 == 1)
     {
-        res = (res * (*this)).bi_mod(mod);
+        return ((*this).powerMod(power-1, mod)  * (*this)).bi_mod(mod);
     }
-    return res;*/
+    else
+    {
+        BigInt b = (*this).powerMod(power/2, mod);
+        return (b * b).bi_mod(mod);
+    }
+}
+
+std::vector<BigInt> BigInt::toBinary() const
+{
+    BigInt copy = (*this);
+    std::vector<BigInt> res;
+    while (copy != 0)
+    {
+        res.push_back(copy % 2);
+        copy = copy / 2;
+    }
+    std::reverse(res.begin(), res.end());
+    return res;
 }
 
 BigInt BigInt::max(const BigInt &left, const BigInt &right) const

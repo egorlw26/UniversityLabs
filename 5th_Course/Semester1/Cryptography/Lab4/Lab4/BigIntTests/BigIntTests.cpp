@@ -174,6 +174,30 @@ namespace BigIntTests
 			BigInt actual = base % mod;
 			Assert::IsTrue(expected == actual);
 		}
+
+		TEST_METHOD(ToBinaryTest1)
+		{
+			a = 13;
+			auto binary = a.toBinary();
+			std::vector<BigInt> expected = { 1, 1, 0, 1 };
+
+			for (int i = 0; i < expected.size(); ++i)
+			{
+				Assert::IsTrue(binary[i] == expected[i]);
+			}
+		}
+
+		TEST_METHOD(ToBinaryTest2)
+		{
+			a = 435761;
+			auto binary = a.toBinary();
+			std::vector<BigInt> expected = { 1,1,0,1,0,1,0,0,1,1,0,0,0,1,1,0,0,0,1 };
+
+			for (int i = 0; i < expected.size(); ++i)
+			{
+				Assert::IsTrue(binary[i] == expected[i]);
+			}
+		}
 	private:
 		BigInt a, b, exp;
 	};

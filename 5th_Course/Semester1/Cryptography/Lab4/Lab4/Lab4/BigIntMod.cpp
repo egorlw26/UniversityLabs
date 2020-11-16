@@ -11,6 +11,10 @@ BigIntMod::BigIntMod(BigInt &n, BigInt &m):
     m_number(n.bi_mod(m)), m_mod(m)
 {}
 
+BigIntMod::BigIntMod(const BigInt& n, const BigInt& m) :
+    m_number(n.bi_mod(m)), m_mod(m)
+{}
+
 BigIntMod::BigIntMod(const BigIntMod &other):
     m_number(other.m_number), m_mod(other.m_mod)
 {}

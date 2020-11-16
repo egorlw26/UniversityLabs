@@ -10,6 +10,8 @@ public:
 
     BigIntMod(BigInt& n, BigInt& m);
 
+    BigIntMod(const BigInt& n, const BigInt& m);
+
     BigIntMod(const BigIntMod& other);
 
     BigIntMod sum(const BigIntMod& other) const;

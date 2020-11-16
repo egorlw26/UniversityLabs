@@ -156,7 +156,6 @@ bool AdditionalFuncs::MillerRabin(const BigInt& n, const BigInt& k)
 		return true;
 	if (n % 2 == 0)
 	{
-		//std::cout << "Wrong N" << std::endl;
 		return false;
 	}
 	BigInt d = n - 1;
@@ -166,7 +165,7 @@ bool AdditionalFuncs::MillerRabin(const BigInt& n, const BigInt& k)
 		s = s + 1;
 		d = d / 2;
 	}
-	for (BigInt i = 0; i < k.bi_sqrt(); i = i + 1)
+	for (BigInt i = 0; i < 10; i = i + 1)
 	{
 		bool p = false;
 		BigInt a = rand(n - 4) + 2;
@@ -210,15 +209,19 @@ BigInt AdditionalFuncs::randomPrime()
 BigInt AdditionalFuncs::findRandomNearestPrime(const int bitLength)
 {
 	BigInt res = BigInt(2).power(bitLength);
-	BigInt step = 10;
-	int iteration = 0;
-	std::cout << res << std::endl;
+	res = res - rand(res / 4);
+	//int iteration = 0;
+	if (res.mod2() == 0)
+	{
+		res = res - 1;
+	}
+	//std::cout << res << std::endl;
 	while (!MillerRabin(res, res.getBILength()))
 	{
-		std::cout << "Iteration: " << ++iteration << std::endl;
-		res = res - rand(step);
+		//std::cout << "Iteration: " << ++iteration << std::endl;
+		res = res - 2;
 	}
-	std::cout << "Prime found: " << res << std::endl;
+	//std::cout << "Prime found: " << res << std::endl;
 	return res;
 }
 

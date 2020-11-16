@@ -198,3 +198,15 @@ Some results:
 |3              |78           |48.585 milliseconds|
 |4              |317         |187.915 milliseconds|
 |5              |1261         |739.165 milliseconds|
+
+
+# Lab №4 (RSA only)
+
+#### RSA
+| Bit length | Initialization | Encryption | Decryption |
+|---------------|----------------|----------|-----------|
+|16              |55 ms            |0 ms| 5 ms |
+|32              |438 ms          |0 ms| 31 ms|
+|64              |3 208 ms           |0 ms| 154 ms|
+|128             |69 797 ms         |0 ms| 821 ms |
+|256              |1261         |0 ms|739.165 milliseconds|
